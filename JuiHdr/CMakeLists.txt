@@ -1,8 +1,6 @@
 
 MESSAGE(STATUS "CMAKE_CURRENT_SOURCE_DIR(JUI) : ${CMAKE_CURRENT_SOURCE_DIR}")
 
-OPTION(JUI_SYSTEMFRAME "QntGui with system frame" OFF)
-
 CONFIGURE_FILE (
   "${CMAKE_CURRENT_SOURCE_DIR}/JuiConfig.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/JuiConfig.h"
@@ -26,18 +24,13 @@ SET(Jui_hdr
 	Console.h
 )
 
-SET(Jui_src
-	Canvan.cpp
-	Button.cpp
-	Console.cpp
-)
 
 # Create a library called "Hello" which includes the source file "hello.cxx".
 # The extension is already found. Any number of sources could be listed here.
-ADD_LIBRARY (Jui ${Jui_hdr} ${Jui_src})
+ADD_LIBRARY (JuiHdr ${Jui_hdr})
 
 # Make sure the compiler can find include files for our Hello library
 # when other libraries or executables link to Hello
-TARGET_INCLUDE_DIRECTORIES (Jui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+TARGET_INCLUDE_DIRECTORIES (JuiHdr PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 TARGET_LINK_LIBRARIES(Jui ${QT_JUI_LIBRARIES})

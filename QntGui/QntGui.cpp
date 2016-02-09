@@ -5,6 +5,8 @@
 //#include "QntConfig.h"
 //#include "ScBridge.h"
 
+//#include "SC_LanguageClient.h"
+
 
 #ifdef QNT_SCBRIDGE
 
@@ -34,6 +36,7 @@ int main(int argc, char *argv[])
 
 	//ScBridge bridge;
 	win.msgConsole(QString("bridge"));
+
 
 	
 

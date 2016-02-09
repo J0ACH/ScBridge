@@ -12,7 +12,7 @@
 #include "settings/manager.hpp"
 */
 
-//namespace Qnt {
+//using namespace ScIDE
 
 //class SessionManager;
 

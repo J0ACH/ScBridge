@@ -1,4 +1,6 @@
 #include "ScBridge.h"
+#include "SC_LanguageClient.h"
+
 /*
 #include <QAction>
 #include <QApplication>
@@ -15,7 +17,7 @@ using namespace Qnt;
 
 ScBridge::ScBridge()
 {
-	//createLanguageClient("myLang");
+	createLanguageClient("myLang");
 
 	//client->runMain();
 	//client->getName()
