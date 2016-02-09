@@ -1,7 +1,19 @@
 #include "ScBridge.h"
-#include "SC_LanguageClient.h"
 
-/*
+#include "main.hpp"
+#include "settings/manager.hpp"
+#include "session_manager.hpp"
+#include "util/standard_dirs.hpp"
+#include "../widgets/main_window.hpp"
+#include "../widgets/help_browser.hpp"
+#include "../widgets/lookup_dialog.hpp"
+#include "../widgets/code_editor/highlighter.hpp"
+#include "../widgets/style/style.hpp"
+#include "../../../QtCollider/hacks/hacks_mac.hpp"
+
+#include "yaml-cpp/node.h"
+#include "yaml-cpp/parser.h"
+
 #include <QAction>
 #include <QApplication>
 #include <QBuffer>
@@ -12,16 +24,14 @@
 #include <QTranslator>
 #include <QDebug>
 
-using namespace Qnt;
-*/
-
 ScBridge::ScBridge()
 {
-	createLanguageClient("myLang");
-
+	//createLanguageClient("myLang");
+	
 	//client->runMain();
 	//client->getName()
 
+	ScIDE::Main *myMain;
 
 
 

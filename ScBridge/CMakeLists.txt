@@ -6,20 +6,32 @@ SET(SC_BUILD_PATH "C:/Supercollider/Supercollider_build" CACHE PATH "Supercollid
 	
 #SET(SC_LANG_PATH "${SC_BUILD_PATH}/Lang/Release/libsclang.lib")
 
-#FIND_PACKAGE(Qt5Core)
-#FIND_PACKAGE(Qt5Widgets)
-#FIND_PACKAGE(Qt5Gui)
-#FIND_PACKAGE(Qt5Network)
-#FIND_PACKAGE(Qt5WebKit)
-#FIND_PACKAGE(Qt5WebKitWidgets)
+FIND_PACKAGE(Qt5Core)
+FIND_PACKAGE(Qt5Widgets)
+FIND_PACKAGE(Qt5LinguistTools)
+FIND_PACKAGE(Qt5WebKitWidgets)
+FIND_PACKAGE(Qt5OpenGL)
+FIND_PACKAGE(Qt5PrintSupport)
+FIND_PACKAGE(Qt5Sensors)
+FIND_PACKAGE(Qt5Quick)
+FIND_PACKAGE(Qt5Qml)
+FIND_PACKAGE(Qt5Sql)
+FIND_PACKAGE(Qt5Positioning)
 
 SET(QT_ScBridge_LIBRARIES 
-	#Qt5::Core
-	#Qt5::Gui 
-	#Qt5::Widgets
-	#Qt5::Network
-	#Qt5::WebKit
-	#Qt5::WebKitWidgets
+	Qt5::Core
+	Qt5::Gui 
+	Qt5::Widgets
+	Qt5::Network
+	Qt5::WebKit
+	Qt5::WebKitWidgets
+	Qt5::OpenGL 
+	Qt5::PrintSupport 
+	Qt5::Sensors 
+	Qt5::Quick 
+	Qt5::Qml 
+	Qt5::Sql 
+	Qt5::Positioning
 	
 )
 
@@ -32,9 +44,9 @@ INCLUDE_DIRECTORIES(
 	${SC_SRC_PATH}/editors/sc-ide/primitives
 	${SC_SRC_PATH}/editors/sc-ide/widgets	
 	
-	#${SC_SRC_PATH}/external_libraries/boost
-	#${SC_SRC_PATH}/external_libraries/yaml-cpp-0.3.0/include
-	#${SC_SRC_PATH}/external_libraries/oscpack_1_1_0
+	${SC_SRC_PATH}/external_libraries/boost
+	${SC_SRC_PATH}/external_libraries/yaml-cpp-0.3.0/include
+	${SC_SRC_PATH}/external_libraries/oscpack_1_1_0
 	
 )
 
@@ -92,6 +104,8 @@ SET(ScBridge_hdr
 	
 )
 
+FILE (GLOB_RECURSE all_hdr *hpp)
+
 SET(ScBridge_src
 	ScBridge.cpp
 )
@@ -101,3 +115,4 @@ ADD_LIBRARY (ScBridge ${ScBridge_hdr} ${ScBridge_src})
 TARGET_INCLUDE_DIRECTORIES (ScBridge PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 TARGET_LINK_LIBRARIES(ScBridge ${QT_ScBridge_LIBRARIES})
+TARGET_LINK_LIBRARIES(ScBridge sclang)

@@ -1,6 +1,6 @@
 #ifndef SCBRIDGE_H
 #define SCBRIDGE_H
-/*
+
 #include <QAbstractNativeEventFilter>
 #include <QAction>
 #include <QObject>
@@ -10,7 +10,7 @@
 #include "sc_server.hpp"
 #include "doc_manager.hpp"
 #include "settings/manager.hpp"
-*/
+
 
 //using namespace ScIDE
 

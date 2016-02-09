@@ -3,4 +3,4 @@
 #include <QtWidgets/QApplication>
 #include "Canvan.h"
 
-#include "sc_process.hpp"
+//#include "sc_process.hpp"
