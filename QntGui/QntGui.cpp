@@ -5,14 +5,29 @@
 //#include "QntConfig.h"
 //#include "ScBridge.h"
 
-//#include "SC_LanguageClient.h"
+#include "main.hpp"
+#include "settings/manager.hpp"
+#include "session_manager.hpp"
+#include "util/standard_dirs.hpp"
+#include "../widgets/main_window.hpp"
+#include "../widgets/help_browser.hpp"
+#include "../widgets/lookup_dialog.hpp"
+#include "../widgets/code_editor/highlighter.hpp"
+#include "../widgets/style/style.hpp"
+#include "../../../QtCollider/hacks/hacks_mac.hpp"
 
+#include "yaml-cpp/node.h"
+#include "yaml-cpp/parser.h"
 
-#ifdef QNT_SCBRIDGE
-
-#include "ScBridge.h"
-
-#endif
+#include <QAction>
+#include <QApplication>
+#include <QBuffer>
+#include <QDataStream>
+#include <QDir>
+#include <QFileOpenEvent>
+#include <QLibraryInfo>
+#include <QTranslator>
+#include <QDebug>
 
 
 //using namespace Qnt;
@@ -30,6 +45,7 @@ int main(int argc, char *argv[])
 	//win.setVersion(Qnt_VERSION_MAJOR, Qnt_VERSION_MINOR, Qnt_VERSION_PATCH);
 	win.show();
 
+	
 
 	//app.setPalette(darkPalette);
 	win.msgConsole(QString("pre-bridge"));
@@ -40,29 +56,21 @@ int main(int argc, char *argv[])
 
 	
 
-#ifdef QNT_SCBRIDGE
-
-
+	/*
 	QStringList arguments(QApplication::arguments());
 	arguments.pop_front(); // application path
 
 	// Pass files to existing instance and quit
-
-	QntInstanceGuard guard;
+	ScIDE::SingleInstanceGuard guard;
 	if (guard.tryConnect(arguments))
 		return 0;
 
+	*/
 	
 	win.msgConsole(QString("QNT_SCBRIDGE exist"));
 	//win.msgConsole(bridge.getClientName());
 
-#endif
 
-#ifndef QNT_SCBRIDGE
-
-	win.msgConsole(QString("QNT_SCBRIDGE dnot exist")); 
-
-#endif
-
-	return app.exec();
+	app.exec();
+	return 0;
 }

@@ -26,12 +26,21 @@
 
 ScBridge::ScBridge()
 {
-	//createLanguageClient("myLang");
-	
-	//client->runMain();
-	//client->getName()
+	QStringList arguments(QApplication::arguments());
+	arguments.pop_front(); // application path
 
-	ScIDE::Main *myMain;
+	// Pass files to existing instance and quit
+	ScIDE::SingleInstanceGuard guard;
+	if (guard.tryConnect(arguments))
+		//return 0;
+
+	ScIDE::Main *myMain = ScIDE::Main::instance();
+	ScIDE::MainWindow *win = new ScIDE::MainWindow(myMain);
+
+	
+
+	//ScIDE::Settings::Manager *settings = myMain->settings();
+	//ScIDE::SessionManager *sessions = myMain->sessionManager();
 
 
 

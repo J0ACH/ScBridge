@@ -32,7 +32,6 @@ SET(QT_ScBridge_LIBRARIES
 	Qt5::Qml 
 	Qt5::Sql 
 	Qt5::Positioning
-	
 )
 
 #for header location
