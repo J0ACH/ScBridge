@@ -1,5 +1,8 @@
+project (ScBridge)
 
-MESSAGE(STATUS "CMAKE_CURRENT_SOURCE_DIR(SCBRIDGE) : ${CMAKE_CURRENT_SOURCE_DIR}")
+MESSAGE(STATUS "SCBRIDGE")
+MESSAGE(STATUS "SCBRIDGE SOURCE DIR" ${CMAKE_CURRENT_SOURCE_DIR})
+MESSAGE(STATUS "SCBRIDGE BINARY DIR" ${CMAKE_CURRENT_BINARY_DIR})
 
 SET(SC_SRC_PATH "C:/Supercollider/Supercollider_src" CACHE PATH "Supercollider source path")
 SET(SC_BUILD_PATH "C:/Supercollider/Supercollider_build" CACHE PATH "Supercollider build path")
@@ -36,10 +39,12 @@ SET(QT_ScBridge_LIBRARIES
 
 #for header location
 INCLUDE_DIRECTORIES(
-	${CMAKE_SOURCE_DIR}/ScBridge
+	${CMAKE_SOURCE_DIR}
 	
 	${SC_SRC_PATH}
 	${SC_SRC_PATH}/editors/sc-ide/core
+	${SC_SRC_PATH}/editors/sc-ide/core/settings
+	${SC_SRC_PATH}/editors/sc-ide/core/util
 	${SC_SRC_PATH}/editors/sc-ide/primitives
 	${SC_SRC_PATH}/editors/sc-ide/widgets	
 	
@@ -47,71 +52,73 @@ INCLUDE_DIRECTORIES(
 	${SC_SRC_PATH}/external_libraries/yaml-cpp-0.3.0/include
 	${SC_SRC_PATH}/external_libraries/oscpack_1_1_0
 	
+	${SC_SRC_PATH}/include/common
+	${SC_SRC_PATH}/include/lang
+	${SC_SRC_PATH}/include/server
+	${SC_SRC_PATH}/include/plugin_interface
+	
+	${SC_SRC_PATH}/include/plugin_interface
 )
 
-LINK_DIRECTORIES( ${SC_BUILD_PATH}/Lang/Release/libsclang.lib )  
+#for library location
+LINK_DIRECTORIES( 
+	${SC_BUILD_PATH}/Lang/Release
+	${SC_BUILD_PATH}/server/scsynth/Release
+	${SC_BUILD_PATH}/server/plugins/Release
+	${SC_BUILD_PATH}/external_libraries/Release
+)  
 
+
+FILE(GLOB_RECURSE SC_INCLUDE_HEADERS ${SC_SRC_PATH}/include/*.h* )
+FILE(GLOB_RECURSE SC_EXTLIBRARIES_HEADERS ${SC_SRC_PATH}/external_libraries/*.h* )
+FILE(GLOB_RECURSE SC_SCIDE_HEADERS ${SC_SRC_PATH}/editors/sc-ide/*.h* )
+FILE(GLOB_RECURSE SC_SCDOC_HEADERS ${SC_SRC_PATH}/SCDoc/*.h* )
+
+FILE(GLOB boost_system_sources ${SC_SRC_PATH}/external_libraries/boost/libs/system/src/*.h*)
+FILE(GLOB boost_fs_sources ${SC_SRC_PATH}/external_libraries/boost/libs/filesystem/src/*.h*)
+FILE(GLOB boost_regex_sources ${SC_SRC_PATH}/external_libraries/boost/libs/regex/src/*.h*)
+FILE(GLOB boost_sync_sources ${SC_SRC_PATH}/external_libraries/boost/libs/regex/src/*.h*)
 
 SET(ScBridge_hdr
 	ScBridge.h
 	
-	${SC_SRC_PATH}/editors/sc-ide/core/main.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/core/sig_mux.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/core/sc_process.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/core/sc_server.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/core/doc_manager.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/core/settings/manager.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/core/settings/theme.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/core/session_manager.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/primitives/sc_ipc_channel.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/cmd_line.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/doc_list.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/documents_dialog.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/editor_box.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/find_replace_tool.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/goto_line_tool.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/lookup_dialog.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/main_window.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/multi_editor.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/popup_text_input.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/post_window.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/session_switch_dialog.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/sessions_dialog.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/tool_box.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/help_browser.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/audio_status_box.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/lang_status_box.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/code_editor/editor.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/code_editor/sc_editor.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/code_editor/highlighter.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/code_editor/line_indicator.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/code_editor/overlay.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/code_editor/autocompleter.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/code_editor/completion_menu.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/settings/dialog.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/settings/general_page.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/settings/sclang_page.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/settings/editor_page.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/settings/shortcuts_page.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/util/path_chooser_widget.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/util/text_format_list_widget.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/util/key_sequence_edit.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/util/popup_widget.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/util/color_widget.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/util/docklet.hpp
-    ${SC_SRC_PATH}/editors/sc-ide/widgets/util/volume_widget.hpp
-	
+	${SC_INCLUDE_HEADERS}
+	#${SC_EXTLIBRARIES_HEADERS}
+	${SC_SCIDE_HEADERS}
+	${SC_SCDOC_HEADERS}
 )
+list(APPEND ScBridge_hdr ${boost_fs_sources} ${boost_system_sources} ${boost_regex_sources})
 
-FILE (GLOB_RECURSE all_hdr *hpp)
+#list(APPEND hello_sources ${CMAKE_SOURCE_DIR}/common/SC_Win32Utils.cpp)
+	#include_directories (../platform/windows/compat_stuff)
+
+#list(APPEND ScBridge_hdr ${CMAKE_SOURCE_DIR}/common/SC_Win32Utils.cpp)
+
+
 
 SET(ScBridge_src
-	ScBridge.cpp
+	ScBridge.cpp	
 )
 
-ADD_LIBRARY (ScBridge ${ScBridge_hdr} ${ScBridge_src})
+#ADD_LIBRARY (ScBridge ${ScBridge_hdr} ${ScBridge_src})
+ADD_EXECUTABLE (ScBridge ${ScBridge_hdr} ${ScBridge_src})
 
-TARGET_INCLUDE_DIRECTORIES (ScBridge PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+#TARGET_INCLUDE_DIRECTORIES (ScBridge PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-TARGET_LINK_LIBRARIES(ScBridge ${QT_ScBridge_LIBRARIES})
-TARGET_LINK_LIBRARIES(ScBridge sclang)
+TARGET_LINK_LIBRARIES(ScBridge 
+	${QT_ScBridge_LIBRARIES}
+	
+	#${SC_BUILD_PATH}/Lang/Release/libsclang.lib
+	libsclang
+		
+	#${SC_BUILD_PATH}/server/scsynth/Release/libscsynth.lib
+	libscsynth
+	
+	#${SC_BUILD_PATH}/external_libraries/Release
+	yaml
+	oscpack
+	boost_system
+)
+
+INSTALL(TARGETS ScBridge DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+

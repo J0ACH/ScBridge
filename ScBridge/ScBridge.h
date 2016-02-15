@@ -1,15 +1,19 @@
 #ifndef SCBRIDGE_H
 #define SCBRIDGE_H
 
+/*
 #include <QAbstractNativeEventFilter>
 #include <QAction>
 #include <QObject>
+*/
 
 //#include "C:/Supercollider/Supercollider_src/editors/sc-ide/core/sc_process.hpp"
+/*
 #include "sc_process.hpp"
 #include "sc_server.hpp"
 #include "doc_manager.hpp"
 #include "settings/manager.hpp"
+*/
 
 
 //using namespace ScIDE

@@ -1,5 +1,5 @@
 #include "ScBridge.h"
-
+/*
 #include "main.hpp"
 #include "settings/manager.hpp"
 #include "session_manager.hpp"
@@ -23,9 +23,29 @@
 #include <QLibraryInfo>
 #include <QTranslator>
 #include <QDebug>
+*/
+
+#include "SC_LanguageClient.h"
+
+
+int main(int argc, char** argv){
+	SC_LanguageClient * client = createLanguageClient("sclang");
+
+	if (!client)
+		return 1;
+
+	int returnCode = client->run(argc, argv);
+
+	destroyLanguageClient(client);
+
+	return returnCode;
+}
 
 ScBridge::ScBridge()
 {
+	//SC_LanguageClient * client = createLanguageClient("sclang");
+
+	/*
 	QStringList arguments(QApplication::arguments());
 	arguments.pop_front(); // application path
 
@@ -36,6 +56,7 @@ ScBridge::ScBridge()
 
 	ScIDE::Main *myMain = ScIDE::Main::instance();
 	ScIDE::MainWindow *win = new ScIDE::MainWindow(myMain);
+	*/
 
 	
 
