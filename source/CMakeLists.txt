@@ -74,11 +74,11 @@ target_link_libraries(ScTester
 		ScBridge
 )
 
-
 set_target_properties( ScBridge ScTester
     PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY lib
 		LIBRARY_OUTPUT_DIRECTORY lib
 		RUNTIME_OUTPUT_DIRECTORY bin
 		DEBUG_POSTFIX d
+	#	WIN32_EXECUTABLE TRUE
 )

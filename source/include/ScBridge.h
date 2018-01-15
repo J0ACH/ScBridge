@@ -15,15 +15,24 @@ namespace SC {
 
 	public:
 		ScBridge(QObject *parent, QString name);
+		
 
 		void begin();
 		void end();
 
 		void setPath(QString);
 		void evaluate(QString);
+		
+		enum class MsgType {
+			NORMAL,
+			ERROR
+		};
+
+	signals:
+		void print(QString); //, MsgType msgType = MsgType::NORMAL
 
 	private:
-		QLocalServer *mIpcServer;
+		QLocalServer * mIpcServer;
 		QLocalSocket *mIpcSocket;
 		QString mScLangPath;
 		QString mIpcServerName;
@@ -45,6 +54,7 @@ namespace SC {
 
 		private slots:
 		void startInterpretr();
+		void killInterpreter();
 		void onReadyRead();
 		void onNewIpcConnection();
 	};
