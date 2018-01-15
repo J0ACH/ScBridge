@@ -5,7 +5,7 @@
 #include <QWidget>
 #include "ScBridge.h"
 
-using namespace ScBridge;
+using namespace SC;
 
 int main(int argc, char *argv[]) {
 	QApplication app(argc, argv);
@@ -13,6 +13,9 @@ int main(int argc, char *argv[]) {
 
 	win->setFixedSize(500, 200);
 	win->show();
+
+	ScBridge *sc = new ScBridge(win, "aaa");
+	sc->begin();
 
 	return app.exec();
 }
