@@ -58,5 +58,5 @@ set_target_properties( ScBridge ScTester
 		LIBRARY_OUTPUT_DIRECTORY_${configType} ${CMAKE_SOURCE_DIR}/build/lib
 		RUNTIME_OUTPUT_DIRECTORY_${configType} ${CMAKE_SOURCE_DIR}/build/bin
 		DEBUG_POSTFIX d
-	#	WIN32_EXECUTABLE TRUE
+		WIN32_EXECUTABLE TRUE
 )

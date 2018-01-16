@@ -7,6 +7,7 @@
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <QDateTime>
+#include <QTimer>
 
 namespace SC {
 
@@ -16,17 +17,17 @@ namespace SC {
 	public:
 		ScBridge(QObject *parent, QString name);
 		
-
-		void begin();
-		void end();
-
 		void setPath(QString);
 		void evaluate(QString);
-		
-		enum class MsgType {
+
+		enum class BridgeMsgType {
 			NORMAL,
 			ERROR
 		};
+
+		public slots:
+		void begin();
+		void kill();
 
 	signals:
 		void print(QString); //, MsgType msgType = MsgType::NORMAL
@@ -36,8 +37,10 @@ namespace SC {
 		QLocalSocket *mIpcSocket;
 		QString mScLangPath;
 		QString mIpcServerName;
+
 		bool mTerminationRequested;
 		QDateTime mTerminationRequestTime;
+		int lateFlagBreakTime;
 
 		enum class StateInterpret { OFF, ON };
 		enum class StateServer { OFF, ON };
@@ -48,13 +51,17 @@ namespace SC {
 			SERVER_BOOTING,
 			SERVER_KILLING
 		};
+
 		StateInterpret mStateInterpret;
 		StateServer mStateServer;
 		BridgeProcess mBridgeProcess;
 
+		void msgParser(QString);
+
 		private slots:
-		void startInterpretr();
-		void killInterpreter();
+		void actInterpretStart();
+		void interpretStarted();
+
 		void onReadyRead();
 		void onNewIpcConnection();
 	};

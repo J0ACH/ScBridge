@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QTextEdit>
+#include <QPushButton>
 #include "ScBridge.h"
 
 using namespace SC;
@@ -24,8 +25,15 @@ int main(int argc, char *argv[]) {
 	console->setReadOnly(true);
 	console->show();
 
+	QPushButton *buttonInter = new QPushButton(win);
+	buttonInter->setGeometry(710, 20, 80, 30);
+	buttonInter->setText("kill");
+	buttonInter->show();
+
+	QObject::connect(buttonInter, SIGNAL(pressed()), sc, SLOT(kill()));
+
 	QObject::connect(sc, SIGNAL(print(QString)), console, SLOT(append(QString)));
-	
+	QObject::connect(&app, SIGNAL(aboutToQuit()), sc, SLOT(kill()));
 	sc->begin();
 	return app.exec();
 }
