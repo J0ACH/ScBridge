@@ -16,13 +16,32 @@ namespace SC {
 
 	public:
 		ScBridge(QObject *parent, QString name);
-		
+
 		void setPath(QString);
 		void evaluate(QString);
 
-		enum class BridgeMsgType {
+		enum class MsgType {
 			NORMAL,
 			ERROR
+		};
+		enum class StateInterpret {
+			OFF,
+			BOOTING,
+			ON,
+			SHUTTING
+		};
+		enum class StateServer {
+			OFF,
+			BOOTING,
+			ON,
+			SHUTTING
+		};
+		enum class BridgeProcess {
+			NaN,
+			INTERPRET_BOOTING,
+			INTERPRET_KILLING,
+			SERVER_BOOTING,
+			SERVER_KILLING
 		};
 
 		public slots:
@@ -42,19 +61,16 @@ namespace SC {
 		QDateTime mTerminationRequestTime;
 		int lateFlagBreakTime;
 
-		enum class StateInterpret { OFF, ON };
-		enum class StateServer { OFF, ON };
-		enum class BridgeProcess {
-			NaN,
-			INTERPRET_BOOTING,
-			INTERPRET_KILLING,
-			SERVER_BOOTING,
-			SERVER_KILLING
-		};
 
 		StateInterpret mStateInterpret;
+
+
 		StateServer mStateServer;
+
+
 		BridgeProcess mBridgeProcess;
+		bool bridgeProcessRun();
+
 
 		void msgParser(QString);
 

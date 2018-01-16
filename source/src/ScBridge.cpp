@@ -23,7 +23,9 @@ namespace SC {
 		this->setPath("C:/Program Files/SuperCollider-3.8.0");
 	}
 
-	void ScBridge::begin() { this->actInterpretStart(); }
+	void ScBridge::begin() { 
+		this->actInterpretStart(); 
+	}
 
 	void ScBridge::kill() {
 		qDebug() << "ScBridge::kill()";
@@ -40,6 +42,11 @@ namespace SC {
 		QString extension = "exe";
 		mScLangPath = QString("%1/%2.%3").arg(path, file, extension);
 		qDebug() << "ScBridge2::setPath " << mScLangPath;
+	}
+
+	bool ScBridge::bridgeProcessRun() {
+		if (mBridgeProcess == BridgeProcess::NaN) return false;
+		return true;
 	}
 
 	void ScBridge::actInterpretStart() {
@@ -71,9 +78,9 @@ namespace SC {
 					mIpcServer->listen(mIpcServerName);
 				}
 				QString command = QStringLiteral("ScIDE.connect(\"%1\")").arg(mIpcServerName);
-				this->evaluate(command);
 				emit print("BridgeProcess::INTERPRET_BOOTING");
 				mBridgeProcess = BridgeProcess::INTERPRET_BOOTING;
+				this->evaluate(command);
 			}
 		}
 		else

@@ -30,10 +30,10 @@ int main(int argc, char *argv[]) {
 	buttonInter->setText("kill");
 	buttonInter->show();
 
-	QObject::connect(buttonInter, SIGNAL(pressed()), sc, SLOT(kill()));
-
 	QObject::connect(sc, SIGNAL(print(QString)), console, SLOT(append(QString)));
+	QObject::connect(buttonInter, SIGNAL(pressed()), sc, SLOT(kill()));
 	QObject::connect(&app, SIGNAL(aboutToQuit()), sc, SLOT(kill()));
+	
 	sc->begin();
 	return app.exec();
 }
