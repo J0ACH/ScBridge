@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QTextEdit>
+#include <QLineEdit>
 #include <QPushButton>
 
 #include "ScBridge.h"
@@ -16,26 +17,29 @@ int main(int argc, char *argv[]) {
 	QApplication app(argc, argv);
 
 	QWidget *win = new QWidget();
-	win->setFixedSize(800, 400);
+	win->setFixedSize(800, 470);
 	win->show();
 
 	ScBridge *sc = new ScBridge(win, "aaa");
+	QObject::connect(&app, SIGNAL(aboutToQuit()), sc, SLOT(kill()));
 
-	QTextEdit *console = new  QTextEdit(win);
-	console->setGeometry(20, 20, 680, 360);
+	QTextEdit *console = new QTextEdit(win);
+	console->setGeometry(20, 20, 680, 380);
 	console->setFont(QFont("Consolas", 8));
 	console->setReadOnly(true);
 	console->show();
+	QObject::connect(sc, SIGNAL(print(QString)), console, SLOT(append(QString)));
+
+	QLineEdit *cmdLine = new QLineEdit(win);
+	cmdLine->setGeometry(20, 420, 680, 30);
+	cmdLine->show();
 
 	QPushButton *buttonInter = new QPushButton(win);
 	buttonInter->setGeometry(710, 20, 80, 30);
 	buttonInter->setText("kill");
 	buttonInter->show();
 
-	QObject::connect(sc, SIGNAL(print(QString)), console, SLOT(append(QString)));
-	
-	QObject::connect(&app, SIGNAL(aboutToQuit()), sc, SLOT(kill()));
-	
+
 	//sc->begin();
 
 	ScServer *server = new ScServer(win);
