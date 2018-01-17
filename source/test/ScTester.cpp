@@ -33,13 +33,14 @@ int main(int argc, char *argv[]) {
 	buttonInter->show();
 
 	QObject::connect(sc, SIGNAL(print(QString)), console, SLOT(append(QString)));
-	QObject::connect(buttonInter, SIGNAL(pressed()), sc, SLOT(kill()));
+	
 	QObject::connect(&app, SIGNAL(aboutToQuit()), sc, SLOT(kill()));
 	
 	//sc->begin();
 
 	ScServer *server = new ScServer(win);
 	QObject::connect(server, SIGNAL(print(QString)), console, SLOT(append(QString)));
+	QObject::connect(buttonInter, SIGNAL(pressed()), server, SLOT(kill()));
 
 	server->setPath("C:/Program Files/SuperCollider-3.9.0");
 	server->begin();
