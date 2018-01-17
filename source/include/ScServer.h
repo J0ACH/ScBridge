@@ -3,6 +3,9 @@
 
 #include <QDebug>
 #include <QProcess>
+#include <QUdpSocket>
+#include <QNetworkDatagram>
+#include <QHostAddress>
 
 namespace SC {
 
@@ -24,9 +27,17 @@ namespace SC {
 
 	private:
 		QString mScServerPath;
+		int port;
+		QUdpSocket *udpSocket;
+		QHostAddress *localAddress;
+
+		void initSocket();
+		
 
 		private slots:
 		void incomingMsg();
+		void onDatagramRecived();
+		void onSendData(QByteArray data);
 	};
 
 }

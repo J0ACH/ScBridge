@@ -5,6 +5,8 @@ namespace SC {
 
 	ScServer::ScServer(QObject *parent) : QProcess(parent) {
 		mScServerPath = "";
+		localAddress = new QHostAddress("127.0.0.1");
+		port = 8060;
 		connect(this, SIGNAL(readyRead()), this, SLOT(incomingMsg()));
 	}
 
@@ -24,7 +26,7 @@ namespace SC {
 			//emit actPrint(tr("ScBridge::startInterpretr %1").arg(mIpcServerName), MessageType::STATUS);
 
 		QStringList scServerArguments;
-		scServerArguments << "-u" << "8080";
+		scServerArguments << "-u" << "10000";
 
 		start(mScServerPath, scServerArguments);
 		bool processStarted = QProcess::waitForStarted();
@@ -45,6 +47,7 @@ namespace SC {
 			mBridgeProcess = BridgeProcess::INTERPRET_BOOTING;
 			this->evaluate(command);
 			*/
+			this->initSocket();
 		}
 		//}
 		//else
@@ -55,11 +58,11 @@ namespace SC {
 
 	void ScServer::evaluate(QString code) {
 		//QString command;
-				
+
 		//QString command = QStringLiteral("[ \"%1,\" ]").arg(code);
 		//'/s_new'
+		/*
 		QString command = QStringLiteral("[\'%1\']").arg(code);
-		emit print(tr("ScServer::evaluate(%1)").arg(command));
 		bool silent = false;
 		QByteArray bytesToWrite = command.toUtf8();
 		size_t writtenBytes = write(bytesToWrite);
@@ -72,6 +75,9 @@ namespace SC {
 		char commandChar = silent ? '\x1b' : '\x0c';
 		write(&commandChar, 1);
 		//write(bytesToWrite);
+		*/
+		emit print(tr("ScServer::evaluate(%1)").arg(code));
+		onSendData(code.toUtf8());
 	}
 
 	void ScServer::kill() {
@@ -93,4 +99,46 @@ namespace SC {
 		}
 	}
 
+
+	void ScServer::initSocket()
+	{
+		udpSocket = new QUdpSocket(this);
+		udpSocket->bind(QHostAddress::LocalHost, port);
+
+		connect(udpSocket, SIGNAL(readyRead()), this, SLOT(onDatagramRecived()));
+	}
+
+	void ScServer::onDatagramRecived()
+	{
+		emit print("ScServer::onDatagramRecived ....");
+		QByteArray datagram;
+		QHostAddress sender;
+		quint16 senderPort;
+
+		while (udpSocket->hasPendingDatagrams())
+		{
+			datagram.resize(udpSocket->pendingDatagramSize());
+			udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+		}
+
+		QString postString = QString::fromUtf8(datagram);
+		QStringList postList = postString.split("\r\n");
+
+		foreach(QString oneLine, postList)
+		{
+			oneLine = oneLine.replace("\t", "    ");
+			emit print(oneLine);
+			qDebug() << oneLine;
+		}
+
+		//emit actNetDataRecived(datagram);
+	}
+
+	void ScServer::onSendData(QByteArray objectsData)
+	{
+		udpSocket->writeDatagram(objectsData.data(), objectsData.size(), *localAddress, 10000);
+	}
+
 }
+
+
