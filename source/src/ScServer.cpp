@@ -5,9 +5,9 @@ namespace SC {
 
 	ScServer::ScServer(QObject *parent) : QProcess(parent) {
 		mScServerPath = "";
-		localAddress = new QHostAddress("127.0.0.1");
-		port = 8060;
-		connect(this, SIGNAL(readyRead()), this, SLOT(incomingMsg()));
+		portTargetServer = 8050;
+		portListenServer = 8051;
+		connect(this, SIGNAL(readyRead()), this, SLOT(processMsgRecived()));
 	}
 
 	void ScServer::setPath(QString path) {
@@ -18,15 +18,8 @@ namespace SC {
 	}
 
 	void ScServer::begin() {
-		this->setProgram(mScServerPath);
-		// this->setArguments("");
-
-		//if (mStateInterpret == StateInterpret::OFF) {
-
-			//emit actPrint(tr("ScBridge::startInterpretr %1").arg(mIpcServerName), MessageType::STATUS);
-
 		QStringList scServerArguments;
-		scServerArguments << "-u" << "10000";
+		scServerArguments << "-u" << QString::number(portTargetServer);
 
 		start(mScServerPath, scServerArguments);
 		bool processStarted = QProcess::waitForStarted();
@@ -37,17 +30,9 @@ namespace SC {
 		else
 		{
 			emit print(tr("Start scserver!"));
-			/*
-			if (!mIpcServer->isListening()) {
-				// avoid a warning on stderr
-				mIpcServer->listen(mIpcServerName);
-			}
-			QString command = QStringLiteral("ScIDE.connect(\"%1\")").arg(mIpcServerName);
-			emit print("BridgeProcess::INTERPRET_BOOTING");
-			mBridgeProcess = BridgeProcess::INTERPRET_BOOTING;
-			this->evaluate(command);
-			*/
-			this->initSocket();
+			udpSocket = new QUdpSocket(this);
+			udpSocket->bind(QHostAddress::LocalHost, portListenServer);
+			connect(udpSocket, SIGNAL(readyRead()), this, SLOT(serverMsgRecived()));
 		}
 		//}
 		//else
@@ -57,27 +42,9 @@ namespace SC {
 	}
 
 	void ScServer::evaluate(QString code) {
-		//QString command;
-
-		//QString command = QStringLiteral("[ \"%1,\" ]").arg(code);
-		//'/s_new'
-		/*
-		QString command = QStringLiteral("[\'%1\']").arg(code);
-		bool silent = false;
-		QByteArray bytesToWrite = command.toUtf8();
-		size_t writtenBytes = write(bytesToWrite);
-
-		if (writtenBytes != bytesToWrite.size()) {
-			emit print("Error when passing data to server!");
-			return;
-		}
-
-		char commandChar = silent ? '\x1b' : '\x0c';
-		write(&commandChar, 1);
-		//write(bytesToWrite);
-		*/
 		emit print(tr("ScServer::evaluate(%1)").arg(code));
-		onSendData(code.toUtf8());
+		QByteArray ba = code.toUtf8();
+		udpSocket->writeDatagram(ba.data(), ba.size(), QHostAddress::LocalHost, portTargetServer);
 	}
 
 	void ScServer::kill() {
@@ -85,7 +52,9 @@ namespace SC {
 		evaluate("/quit");
 	}
 
-	void ScServer::incomingMsg() {
+	void ScServer::processMsgRecived() {
+
+		//emit print("ScServer::incomingMsg");
 
 		QByteArray out = QProcess::readAll();
 		QString postString = QString::fromUtf8(out);
@@ -99,18 +68,8 @@ namespace SC {
 		}
 	}
 
-
-	void ScServer::initSocket()
+	void ScServer::serverMsgRecived()
 	{
-		udpSocket = new QUdpSocket(this);
-		udpSocket->bind(QHostAddress::LocalHost, port);
-
-		connect(udpSocket, SIGNAL(readyRead()), this, SLOT(onDatagramRecived()));
-	}
-
-	void ScServer::onDatagramRecived()
-	{
-		emit print("ScServer::onDatagramRecived ....");
 		QByteArray datagram;
 		QHostAddress sender;
 		quint16 senderPort;
@@ -122,22 +81,9 @@ namespace SC {
 		}
 
 		QString postString = QString::fromUtf8(datagram);
-		QStringList postList = postString.split("\r\n");
-
-		foreach(QString oneLine, postList)
-		{
-			oneLine = oneLine.replace("\t", "    ");
-			emit print(oneLine);
-			qDebug() << oneLine;
-		}
-
-		//emit actNetDataRecived(datagram);
+		emit print(tr("ScServer::serverMsgRecived (%1)").arg(postString));
 	}
 
-	void ScServer::onSendData(QByteArray objectsData)
-	{
-		udpSocket->writeDatagram(objectsData.data(), objectsData.size(), *localAddress, 10000);
-	}
 
 }
 

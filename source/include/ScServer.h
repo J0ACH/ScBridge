@@ -16,7 +16,7 @@ namespace SC {
 		ScServer(QObject *parent);
 
 		void setPath(QString);
-		
+
 		public slots:
 		void begin();
 		void evaluate(QString);
@@ -27,17 +27,12 @@ namespace SC {
 
 	private:
 		QString mScServerPath;
-		int port;
 		QUdpSocket *udpSocket;
-		QHostAddress *localAddress;
-
-		void initSocket();
-		
+		int portTargetServer, portListenServer;
 
 		private slots:
-		void incomingMsg();
-		void onDatagramRecived();
-		void onSendData(QByteArray data);
+		void processMsgRecived();
+		void serverMsgRecived();
 	};
 
 }
