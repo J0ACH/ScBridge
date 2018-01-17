@@ -5,7 +5,9 @@
 #include <QWidget>
 #include <QTextEdit>
 #include <QPushButton>
+
 #include "ScBridge.h"
+#include "ScServer.h"
 
 using namespace SC;
 
@@ -34,7 +36,14 @@ int main(int argc, char *argv[]) {
 	QObject::connect(buttonInter, SIGNAL(pressed()), sc, SLOT(kill()));
 	QObject::connect(&app, SIGNAL(aboutToQuit()), sc, SLOT(kill()));
 	
-	sc->begin();
+	//sc->begin();
+
+	ScServer *server = new ScServer(win);
+	QObject::connect(server, SIGNAL(print(QString)), console, SLOT(append(QString)));
+
+	server->setPath("C:/Program Files/SuperCollider-3.9.0");
+	server->begin();
+
 	return app.exec();
 }
 
