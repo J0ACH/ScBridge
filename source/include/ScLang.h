@@ -20,36 +20,19 @@ namespace SC {
 		void setPath(QString);
 		void evaluate(QString);
 
+		enum class InterpretState { OFF, BOOTING, ON, SHUTTING };
 		enum class MsgType {
 			NORMAL,
 			ERROR
 		};
-		enum class StateInterpret {
-			OFF,
-			BOOTING,
-			ON,
-			SHUTTING
-		};
-		enum class StateServer {
-			OFF,
-			BOOTING,
-			ON,
-			SHUTTING
-		};
-		enum class BridgeProcess {
-			NaN,
-			INTERPRET_BOOTING,
-			INTERPRET_KILLING,
-			SERVER_BOOTING,
-			SERVER_KILLING
-		};
-
+		
 		public slots:
 		void begin();
 		void kill();
+		void reverse();
 
 	signals:
-		void print(QString); //, MsgType msgType = MsgType::NORMAL
+		void print(QString); 
 
 	private:
 		QLocalServer * mIpcServer;
@@ -62,13 +45,7 @@ namespace SC {
 		int lateFlagBreakTime;
 
 
-		StateInterpret mStateInterpret;
-
-
-		StateServer mStateServer;
-
-
-		BridgeProcess mBridgeProcess;
+		InterpretState mState;
 		bool bridgeProcessRun();
 
 

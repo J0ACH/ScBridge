@@ -4,8 +4,10 @@
 #include <QDebug>
 #include <QTabWidget>
 #include <QWidget>
+#include <QResizeEvent>
 #include <QGroupBox>
-#include <QLabel>
+#include <QCheckBox>
+//#include <QLabel>
 #include <QTextEdit>
 #include <QLineEdit>
 #include <QPushButton>
@@ -27,10 +29,16 @@ public:
 	//signals:
 		//void codeEvaluated(QString);
 
+protected:
+	void resizeEvent(QResizeEvent *event) override;
+
 private:
-	ScServer * server;
-	QGroupBox *groupSC;
-	QLabel *status;
+	ScServer *server;
+	QGroupBox *groupSC, *groupConsole, *groupCmd;
+	QCheckBox *serverRun;
+	QTextEdit *console;
+	QLineEdit *cmdLine;
+	//QLabel *status;
 };
 
 class PageLang : public QWidget {
@@ -42,10 +50,16 @@ public:
 	public slots:
 	void cmdLineEvaluated();
 
+protected:
+	void resizeEvent(QResizeEvent *event) override;
+
 private:
-	ScLang * lang;
-	QGroupBox *groupSC;
-	QLabel *status;
+	ScLang *lang;
+	QGroupBox *groupSC, *groupConsole, *groupCmd;
+	QCheckBox *langRun;
+	QTextEdit *console;
+	QLineEdit *cmdLine;
+	//QLabel *status;
 };
 
 #endif // ! SCTESTER_H

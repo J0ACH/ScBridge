@@ -14,10 +14,11 @@ int main(int argc, char *argv[]) {
 	QTabWidget *win = new QTabWidget();
 
 	//ScTester *win = new ScTester();
-	win->setGeometry(100, 100, 800, 470);
+	win->setGeometry(100, 100, 800, 550);
 	win->addTab(pServer, "Server");
 	win->addTab(pLang, "Interpreter");
 	win->show();
+
 	/*
 	ScBridge *lang = new ScBridge(win, "aaa");
 	lang->setPath("C:/Program Files/SuperCollider-3.9.0");
@@ -63,37 +64,95 @@ int main(int argc, char *argv[]) {
 }
 
 PageServer::PageServer(QWidget *parent) : QWidget(parent) {
-	QString scPath = "C:/Program Files/SuperCollider-3.9.0";
 
 	server = new ScServer(this);
+	server->setPath("C:/Program Files/SuperCollider-3.9.0");
 
 	groupSC = new QGroupBox("Supercollider", this);
+	serverRun = new QCheckBox("Server", groupSC);
 
+	groupConsole = new QGroupBox("Console", this);
+	console = new QTextEdit(groupConsole);
+	console->setFont(QFont("Consolas", 8));
+	console->setReadOnly(true);
+
+	groupCmd = new QGroupBox("Cmd", this);
+	cmdLine = new QLineEdit(groupCmd);
+
+	QObject::connect(serverRun, SIGNAL(pressed()), server, SLOT(reverse()));
+	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
+	QObject::connect(server, SIGNAL(print(QString)), console, SLOT(append(QString)));
+
+
+	/*
 	status = new QLabel(this);
 	status->setText("Server");
 	status->setGeometry(10, 10, 100, 30);
 	status->show();
+	*/
 }
 
 void PageServer::cmdLineEvaluated() {
 	qDebug() << "PageServer::cmdLine EVALUATED";
 }
 
-PageLang::PageLang(QWidget *parent) : QWidget(parent) {
-	QString scPath = "C:/Program Files/SuperCollider-3.9.0";
+void PageServer::resizeEvent(QResizeEvent *event) {
+	QSize size = event->size();
+	groupSC->setGeometry(10, 10, size.width() - 20, 100);
+	serverRun->setGeometry(10, 10, groupSC->width() - 20, 30);
 
+	groupConsole->setGeometry(10, 110, size.width() - 20, 300);
+	console->setGeometry(10, 20, groupConsole->width() - 20, groupConsole->height() - 30);
+
+	groupCmd->setGeometry(10, 410, size.width() - 20, 60);
+	cmdLine->setGeometry(10, 20, groupCmd->width() - 20, groupCmd->height() - 30);
+
+	//qDebug() << "PageServer::resizeEvent";
+}
+
+PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 	lang = new ScLang(this);
+	lang->setPath("C:/Program Files/SuperCollider-3.9.0");
 
 	groupSC = new QGroupBox("Supercollider", this);
+	langRun = new QCheckBox("Interpretr", groupSC);
 
+	groupConsole = new QGroupBox("Console", this);
+	console = new QTextEdit(groupConsole);
+	console->setFont(QFont("Consolas", 8));
+	console->setReadOnly(true);
+
+	groupCmd = new QGroupBox("Cmd", this);
+	cmdLine = new QLineEdit(groupCmd);
+
+	QObject::connect(langRun, SIGNAL(pressed()), lang, SLOT(reverse()));
+	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
+	QObject::connect(lang, SIGNAL(print(QString)), console, SLOT(append(QString)));
+
+	/*
 	status = new QLabel(this);
 	status->setText("Interpretr");
 	status->setGeometry(10, 10, 100, 30);
 	status->show();
+	*/
 }
 
 void PageLang::cmdLineEvaluated() {
 	qDebug() << "PageLang::cmdLine EVALUATED";
+}
+
+void PageLang::resizeEvent(QResizeEvent *event) {
+	QSize size = event->size();
+	groupSC->setGeometry(10, 10, size.width() - 20, 100);
+	langRun->setGeometry(10, 10, groupSC->width() - 20, 30);
+
+	groupConsole->setGeometry(10, 110, size.width() - 20, 300);
+	console->setGeometry(10, 20, groupConsole->width() - 20, groupConsole->height() - 30);
+
+	groupCmd->setGeometry(10, 410, size.width() - 20, 60);
+	cmdLine->setGeometry(10, 20, groupCmd->width() - 20, groupCmd->height() - 30);
+
+	//qDebug() << "PageServer::resizeEvent";
 }
 
 

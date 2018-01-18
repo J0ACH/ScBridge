@@ -19,9 +19,10 @@ namespace SC {
 
 		public slots:
 		void evaluate(QString);
+		
 		void begin();		
 		void kill();
-		void status();
+		void reverse();
 
 	signals:
 		void print(QString);

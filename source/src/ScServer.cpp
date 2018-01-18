@@ -55,10 +55,16 @@ namespace SC {
 		}
 	}
 
-	void ScServer::kill() { evaluate("/quit"); }
+	void ScServer::kill() {
+		evaluate("/quit");
+		//udpSocket->close();
+		mState = ServerState::OFF;
+	}
 
-	void ScServer::status() {
-		evaluate("/status");
+	void ScServer::reverse() {
+		if (mState == ServerState::OFF) { this->begin(); }
+		else if (mState == ServerState::ON) { this->kill(); }
+
 	}
 
 	void ScServer::processMsgRecived() {

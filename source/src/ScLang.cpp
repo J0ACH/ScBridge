@@ -9,11 +9,9 @@ namespace SC {
 		mIpcServerName = "SCBridge_" + QString::number(QCoreApplication::applicationPid());
 		mTerminationRequested = false;
 
+		mState = InterpretState::OFF;
 		lateFlagBreakTime = 500;
 
-		mStateInterpret = StateInterpret::OFF;
-		mStateServer = StateServer::OFF;
-		mBridgeProcess = BridgeProcess::NaN;
 
 		connect(this, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 		//connect(this, SIGNAL(finished(int, ExitStatus)), this, SLOT(killInterpreter()));
@@ -36,6 +34,11 @@ namespace SC {
 		//}
 	}
 
+	void ScLang::reverse() {
+		if (mState == InterpretState::OFF) { this->begin(); }
+		else if (mState == InterpretState::ON) { this->kill(); }
+	}
+
 	void ScLang::setPath(QString path) {
 		QString file = "sclang";
 		QString extension = "exe";
@@ -44,7 +47,7 @@ namespace SC {
 	}
 
 	bool ScLang::bridgeProcessRun() {
-		if (mBridgeProcess == BridgeProcess::NaN) return false;
+		if (mState == InterpretState::OFF) return false;
 		return true;
 	}
 
@@ -52,7 +55,7 @@ namespace SC {
 		this->setProgram(mScLangPath);
 		// this->setArguments("");
 
-		if (mStateInterpret == StateInterpret::OFF) {
+		if (mState == InterpretState::OFF) {
 
 			//emit actPrint(tr("ScBridge::startInterpretr %1").arg(mIpcServerName), MessageType::STATUS);
 
@@ -68,6 +71,7 @@ namespace SC {
 			bool processStarted = QProcess::waitForStarted();
 			if (!processStarted)
 			{
+				mState = InterpretState::OFF;
 				emit print(tr("Failed to start interpreter!"));
 			}
 			else
@@ -78,7 +82,7 @@ namespace SC {
 				}
 				QString command = QStringLiteral("ScIDE.connect(\"%1\")").arg(mIpcServerName);
 				emit print("BridgeProcess::INTERPRET_BOOTING");
-				mBridgeProcess = BridgeProcess::INTERPRET_BOOTING;
+				mState = InterpretState::BOOTING;
 				this->evaluate(command);
 			}
 		}
@@ -88,8 +92,7 @@ namespace SC {
 		}
 	}
 	void ScLang::interpretStarted() {
-		mStateInterpret = StateInterpret::ON;
-		mBridgeProcess = BridgeProcess::NaN;
+		mState = InterpretState::ON;
 		emit print("Interpret start finish");
 	}
 
