@@ -1,10 +1,9 @@
 
-#include "ScBridge.h"
+#include "ScLang.h"
 
 namespace SC {
 
-	ScBridge::ScBridge(QObject *parent, QString userName) : QProcess(parent) {
-		qDebug() << "ScBridge username:" << userName;
+	ScLang::ScLang(QObject *parent) : QProcess(parent) {
 		mIpcServer = new QLocalServer(this);
 		mIpcSocket = NULL;
 		mIpcServerName = "SCBridge_" + QString::number(QCoreApplication::applicationPid());
@@ -20,15 +19,15 @@ namespace SC {
 		//connect(this, SIGNAL(finished(int, ExitStatus)), this, SLOT(killInterpreter()));
 		//connect(mIpcServer, SIGNAL(newConnection()), this, SLOT(onNewIpcConnection()));
 
-		this->setPath("C:/Program Files/SuperCollider-3.8.0");
+
 	}
 
-	void ScBridge::begin() { 
-		this->actInterpretStart(); 
+	void ScLang::begin() {
+		this->actInterpretStart();
 	}
 
-	void ScBridge::kill() {
-		qDebug() << "ScBridge::kill()";
+	void ScLang::kill() {
+		qDebug() << "ScLang::kill()";
 		//if (mStateInterpret == StateInterpret::ON)
 		//{
 		this->evaluate("Server.killAll");
@@ -37,19 +36,19 @@ namespace SC {
 		//}
 	}
 
-	void ScBridge::setPath(QString path) {
+	void ScLang::setPath(QString path) {
 		QString file = "sclang";
 		QString extension = "exe";
 		mScLangPath = QString("%1/%2.%3").arg(path, file, extension);
-		qDebug() << "ScBridge2::setPath " << mScLangPath;
+		qDebug() << "ScLang::setPath " << mScLangPath;
 	}
 
-	bool ScBridge::bridgeProcessRun() {
+	bool ScLang::bridgeProcessRun() {
 		if (mBridgeProcess == BridgeProcess::NaN) return false;
 		return true;
 	}
 
-	void ScBridge::actInterpretStart() {
+	void ScLang::actInterpretStart() {
 		this->setProgram(mScLangPath);
 		// this->setArguments("");
 
@@ -88,13 +87,13 @@ namespace SC {
 			emit print("Interpret is running");
 		}
 	}
-	void ScBridge::interpretStarted() {
+	void ScLang::interpretStarted() {
 		mStateInterpret = StateInterpret::ON;
 		mBridgeProcess = BridgeProcess::NaN;
 		emit print("Interpret start finish");
 	}
 
-	void ScBridge::onReadyRead() {
+	void ScLang::onReadyRead() {
 		if (mTerminationRequested) {
 			// when stopping the language, we don't want to post for longer than 200 ms to prevent the UI to freeze
 			if (QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() - mTerminationRequestTime.toMSecsSinceEpoch() > 200)
@@ -115,7 +114,7 @@ namespace SC {
 		this->msgParser(postString);
 	}
 
-	void ScBridge::onNewIpcConnection() {
+	void ScLang::onNewIpcConnection() {
 		qDebug() << "ScBridge::onNewIpcConnection";
 		if (mIpcSocket)
 			// we can handle only one ipc connection at a time
@@ -127,8 +126,8 @@ namespace SC {
 		connect(mIpcSocket, SIGNAL(readyRead()), this, SLOT(onIpcData()));
 	}
 
-	void ScBridge::evaluate(QString code) {
-		emit print(QString("ScBridge::evaluate -> %1").arg(code));
+	void ScLang::evaluate(QString code) {
+		emit print(QString("ScLang::evaluate -> %1").arg(code));
 		bool synced = false;
 		bool silent = false;
 		bool printing = false;
@@ -179,7 +178,7 @@ namespace SC {
 
 	}
 
-	void ScBridge::msgParser(QString msg)
+	void ScLang::msgParser(QString msg)
 	{
 		//qDebug() << "msg: " << msg;
 		//emit print(QString("msg: %1").arg(msg));

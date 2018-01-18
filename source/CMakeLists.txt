@@ -35,11 +35,13 @@ add_custom_command(TARGET ScBridge
 # ////////////////////////////
 
 add_executable(ScTester 
+	${ScTester_hdr}
 	${ScTester_src}
 )
 
 target_include_directories(ScTester 
 	PRIVATE 
+		${CMAKE_CURRENT_LIST_DIR}/test
 		${CMAKE_CURRENT_LIST_DIR}/include
 	PUBLIC
 		${_qtIncludeDirs}

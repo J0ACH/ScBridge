@@ -7,6 +7,7 @@ namespace SC {
 		mScServerPath = "";
 		portTargetServer = 8050;
 		portListenServer = 8051;
+		mState = ServerState::OFF;
 		connect(this, SIGNAL(readyRead()), this, SLOT(processMsgRecived()));
 	}
 
@@ -19,37 +20,45 @@ namespace SC {
 
 	void ScServer::begin() {
 		QStringList scServerArguments;
-		scServerArguments << "-u" << QString::number(portTargetServer);
-
-		start(mScServerPath, scServerArguments);
-		bool processStarted = QProcess::waitForStarted();
-		if (!processStarted)
+		if (mState == ServerState::OFF)
 		{
-			emit print(tr("Failed to start scserver!"));
+			scServerArguments << "-u" << QString::number(portTargetServer);
+			start(mScServerPath, scServerArguments);
+			mState = ServerState::BOOTING;
+			bool processStarted = QProcess::waitForStarted();
+			if (!processStarted)
+			{
+				mState = ServerState::OFF;
+				emit print(tr("Failed to start scserver!"));
+			}
+			else
+			{
+				emit print(tr("Start scserver!"));
+				udpSocket = new QUdpSocket(this);
+				udpSocket->bind(QHostAddress::LocalHost, portListenServer);
+				connect(udpSocket, SIGNAL(readyRead()), this, SLOT(serverMsgRecived()));
+				mState = ServerState::ON;
+			}
 		}
 		else
 		{
-			emit print(tr("Start scserver!"));
-			udpSocket = new QUdpSocket(this);
-			udpSocket->bind(QHostAddress::LocalHost, portListenServer);
-			connect(udpSocket, SIGNAL(readyRead()), this, SLOT(serverMsgRecived()));
+			emit print("ScServer is running");
 		}
-		//}
-		//else
-		//{
-		//	emit print("Interpret is running");
-		//}
 	}
 
 	void ScServer::evaluate(QString code) {
-		emit print(tr("ScServer::evaluate(%1)").arg(code));
-		QByteArray ba = code.toUtf8();
-		udpSocket->writeDatagram(ba.data(), ba.size(), QHostAddress::LocalHost, portTargetServer);
+		if (mState == ServerState::ON)
+		{
+			emit print(tr("ScServer::evaluate(%1)").arg(code));
+			QByteArray ba = code.toUtf8();
+			udpSocket->writeDatagram(ba.data(), ba.size(), QHostAddress::LocalHost, portTargetServer);
+		}
 	}
 
-	void ScServer::kill() {
-		//int cmd_num = 3;
-		evaluate("/quit");
+	void ScServer::kill() { evaluate("/quit"); }
+
+	void ScServer::status() {
+		evaluate("/status");
 	}
 
 	void ScServer::processMsgRecived() {

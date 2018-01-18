@@ -18,9 +18,10 @@ namespace SC {
 		void setPath(QString);
 
 		public slots:
-		void begin();
 		void evaluate(QString);
+		void begin();		
 		void kill();
+		void status();
 
 	signals:
 		void print(QString);
@@ -30,9 +31,13 @@ namespace SC {
 		QUdpSocket *udpSocket;
 		int portTargetServer, portListenServer;
 
+		enum class ServerState { OFF, BOOTING, ON, SHUTTING };
+		ServerState mState;
+
 		private slots:
 		void processMsgRecived();
 		void serverMsgRecived();
+		
 	};
 
 }

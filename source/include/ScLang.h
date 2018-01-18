@@ -1,5 +1,5 @@
-#ifndef SCBRIDGE_H
-#define SCBRIDGE_H
+#ifndef SCLANG_H
+#define SCLANG_H
 
 #include <QDebug>
 #include <QApplication>
@@ -11,11 +11,11 @@
 
 namespace SC {
 
-	class ScBridge : public QProcess {
+	class ScLang : public QProcess {
 		Q_OBJECT
 
 	public:
-		ScBridge(QObject *parent, QString name);
+		ScLang(QObject *parent);
 
 		void setPath(QString);
 		void evaluate(QString);
@@ -88,4 +88,4 @@ namespace SC {
 
 
 
-#endif // ! SCBRIDGE_H
+#endif // ! SCLANG_H
