@@ -13,12 +13,34 @@ namespace SC {
 		lateFlagBreakTime = 500;
 
 		connect(this, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
-		//connect(this, SIGNAL(finished(int, ExitStatus)), this, SLOT(killInterpreter()));
 		connect(mIpcServer, SIGNAL(newConnection()), this, SLOT(onNewIpcConnection()));
+		connect(
+			this, SIGNAL(stateChanged(QProcess::ProcessState)),
+			this, SLOT(onProcessStateChanged(QProcess::ProcessState))
+		);
+		//connect(this, SIGNAL(finished(int, ExitStatus)), this, SLOT(killInterpreter()));
 	}
 
-	void ScLang::begin() {
-		if (mState == InterpretState::OFF)
+	void ScLang::reverse() {
+		//if (mState == InterpretState::OFF) { this->startLanguage(); }
+		//else if (mState == InterpretState::ON) { this->kill(); }
+
+		switch (mState) {
+		case InterpretState::OFF:
+			startLanguage();
+			break;
+		default:
+			stopLanguage();
+		}
+	}
+
+	void ScLang::startLanguage() {
+
+		if (mState != InterpretState::OFF) {
+			emit print("Interpreter is already running.");
+			return;
+		}
+		else
 		{
 			mState = InterpretState::BOOTING;
 			emit changeState(mState);
@@ -37,6 +59,7 @@ namespace SC {
 				emit changeState(mState);
 				emit print(tr("Failed to start interpreter!"));
 			}
+			/*
 			else
 			{
 				if (!mIpcServer->isListening()) {
@@ -47,15 +70,12 @@ namespace SC {
 
 				this->evaluate(command);
 			}
-		}
-		else
-		{
-			emit print("Interpret is running");
+			*/
 		}
 	}
 
-	void ScLang::kill() {
-		qDebug() << "ScLang::kill()";
+	void ScLang::stopLanguage() {
+		qDebug() << "ScLang::stopLanguage()";
 		//if (mStateInterpret == StateInterpret::ON)
 		//{
 		this->evaluate("Server.killAll");
@@ -64,10 +84,7 @@ namespace SC {
 		//}
 	}
 
-	void ScLang::reverse() {
-		if (mState == InterpretState::OFF) { this->begin(); }
-		else if (mState == InterpretState::ON) { this->kill(); }
-	}
+
 
 	void ScLang::setPath(QString path) {
 		QString file = "sclang";
@@ -90,6 +107,8 @@ namespace SC {
 
 		QByteArray out = QProcess::readAll();
 		QString postString = QString::fromUtf8(out);
+		emit print(postString);
+		/*
 		QStringList postList = postString.split("\r\n");
 
 		foreach(QString oneLine, postList)
@@ -100,7 +119,33 @@ namespace SC {
 		}
 
 		this->msgParser(postString);
+		*/
 	}
+
+	void ScLang::evaluate(QString code) {
+		//emit print(QString("ScLang::evaluate -> %1").arg(code));
+		bool synced = false;
+		bool silent = false;
+		bool printing = false;
+
+		if (state() != QProcess::Running) {
+			emit print("Interpreter is not running!");
+			return;
+		}
+
+		QByteArray bytesToWrite = code.toUtf8();
+		size_t writtenBytes = write(bytesToWrite);
+
+		if (writtenBytes != bytesToWrite.size()) {
+			emit print("Error when passing data to interpreter!");
+			return;
+		}
+
+		char commandChar = silent ? '\x1b' : '\x0c';
+		//if (printing) { emit print(tr("evaluate: %1\r\n").arg(code)); }
+		write(&commandChar, 1);
+	}
+
 
 	void ScLang::onNewIpcConnection() {
 		qDebug() << "ScBridge::onNewIpcConnection";
@@ -112,12 +157,75 @@ namespace SC {
 
 		connect(mIpcSocket, SIGNAL(disconnected()), this, SLOT(finalizeConnection()));
 		connect(mIpcSocket, SIGNAL(readyRead()), this, SLOT(onIpcData()));
+
 	}
+	void ScLang::finalizeConnection() {
+		emit print("ScLang::finalizedConection()");
+		mIpcData.clear();
+		mIpcSocket->deleteLater();
+		mIpcSocket = NULL;
+	}
+
+	void ScLang::onProcessStateChanged(QProcess::ProcessState state)
+	{
+		emit print("ScLang::onProcessStateChanged()");
+		switch (state) {
+		case QProcess::Starting:
+			break;
+
+		case QProcess::Running:
+			onStart();
+			break;
+
+		case QProcess::NotRunning:
+			//postQuitNotification();
+			//mCompiled = false;
+			break;
+		}
+	}
+
 
 	void ScLang::onIpcData() {
 		mIpcData.append(mIpcSocket->readAll());
+		// After we have put the data in the buffer, process it
+		int avail = mIpcData.length();
+		do {
+			if (mReadSize == 0 && avail > 4) {
+				mReadSize = arrayToInt(mIpcData.left(4));
+				mIpcData.remove(0, 4);
+				avail -= 4;
+			}
 
-		while (mIpcData.size()) {
+			if (mReadSize > 0 && avail >= mReadSize) {
+				QByteArray baReceived(mIpcData.left(mReadSize));
+				mIpcData.remove(0, mReadSize);
+				mReadSize = 0;
+				avail -= mReadSize;
+
+				QDataStream in(baReceived);
+				in.setVersion(QDataStream::Qt_4_6);
+				QString selector, message;
+				in >> selector;
+				if (in.status() != QDataStream::Ok)
+					return;
+
+				in >> message;
+				if (in.status() != QDataStream::Ok)
+					return;
+
+				qDebug() << "ScLang::onIpcData selector:" << selector;
+				onResponse(selector, message);
+				//emit response(selector, message);
+			}
+		} while ((mReadSize == 0 && avail > 4) || (mReadSize > 0 && avail > mReadSize));
+		/*
+		*/
+
+		/*
+
+		mIpcData.append(mIpcSocket->readAll());
+
+		while (mIpcData.size() - 1) {
 			QBuffer receivedData(&mIpcData);
 			receivedData.open(QIODevice::ReadOnly);
 
@@ -131,168 +239,75 @@ namespace SC {
 			in >> message;
 			if (in.status() != QDataStream::Ok)
 				return;
-
 			mIpcData.remove(0, receivedData.pos());
+			qDebug() << "ScLang::onIpcData selector:" << selector;
+			emit print(tr("ScLang::onIpcData selector:%1 data:%2").arg(selector, message));
+			//onResponse(selector, message);
 
-			onResponse(selector, message);
-			//emit response(selector, message);
 		}
+		*/
 
-		QString postString = QString::fromUtf8(mIpcData);
-		emit print(tr("ScLang::onIpcData(%1)").arg(postString));
-	}
-	void ScLang::finalizeConnection() {
-		emit print("ScLang::finalizedConection()");
-		mIpcData.clear();
-		mIpcSocket->deleteLater();
-		mIpcSocket = NULL;
-
-		mState = InterpretState::OFF;
-		emit changeState(mState);
-		emit print("InterpretState::OFF");
-
+		//QString postString = QString::fromUtf8(mIpcData);
+		//emit print(tr("ScLang::onIpcData(%1)").arg(postString));
 	}
 
+	qint32 ScLang::arrayToInt(QByteArray source)
+	{
+		qint32 temp;
+		QDataStream data(&source, QIODevice::ReadWrite);
+		data >> temp;
+		return temp;
+	}
 
 	void ScLang::onResponse(const QString & selector, const QString & data)
 	{
-		static QString serverRunningSelector("defaultServerRunningChanged");
-		static QString introspectionSelector("introspection");
-		static QString classLibraryRecompiledSelector("classLibraryRecompiled");
-		static QString requestCurrentPathSelector("requestCurrentPath");
-
-		 qDebug() << "ScBridge::onResponse selector: " << selector;
-
-		if (selector == serverRunningSelector)
-		{
-			// DATA O STAVU SERVERU - msg[0] bool STATE; msg[1] int IP; msg[2] int PORT!!!!!!!!!!!
-			QStringList msg = data.split("\n");
+		if (selector == QStringLiteral("introspection")) {
+			emit print("ScLang::onResponse selector: introspection");
+			//using ScLanguage::Introspection;
 			/*
-			qDebug() << "SERVER msg size: " << msg.size();
-			qDebug() << "SERVER msg[0]: " << msg[0];
-			qDebug() << "SERVER msg[1]: " << msg[1];
-			qDebug() << "SERVER msg[2]: " << msg[2];
-			qDebug() << "SERVER msg[3]: " << msg[3];
+			auto watcher = new QFutureWatcher<Introspection>(this);
+			connect(watcher, &QFutureWatcher<Introspection>::finished, [=] {
+				try {
+					Introspection newIntrospection = watcher->result();
+					mIntrospection = std::move(newIntrospection);
+					emit introspectionChanged();
+				}
+				catch (std::exception & e) {
+					MainWindow::instance()->showStatusMessage(e.what());
+				}
+				watcher->deleteLater();
+			});
+
+			// Start the computation.
+			QFuture<Introspection> future = QtConcurrent::run([](QString data) {
+				return ScLanguage::Introspection(data);
+			}, data);
+			watcher->setFuture(future);
 			*/
-
-			/*
-			switch (mBridgeProcess)
-			{
-			case SupercolliderBridge::ScBridge::BridgeProcess::NaN:
-			qDebug() << "ScBridge::onResponse mBridgeProcess: NaN";
-			break;
-			case SupercolliderBridge::ScBridge::BridgeProcess::INTERPRET_BOOTING:
-			qDebug() << "ScBridge::onResponse mBridgeProcess: INTERPRET_BOOTING";
-			break;
-			case SupercolliderBridge::ScBridge::BridgeProcess::INTERPRET_KILLING:
-			qDebug() << "ScBridge::onResponse mBridgeProcess: INTERPRET_KILLING";
-			break;
-			case SupercolliderBridge::ScBridge::BridgeProcess::SERVER_BOOTING:
-			qDebug() << "ScBridge::onResponse mBridgeProcess: SERVER_BOOTING";
-			break;
-			case SupercolliderBridge::ScBridge::BridgeProcess::SERVER_KILLING:
-			qDebug() << "ScBridge::onResponse mBridgeProcess: SERVER_KILLING";
-			break;
-			}
-
-			switch (mServerState)
-			{
-			case SupercolliderBridge::ScBridge::StateServer::OFF:
-			qDebug() << "ScBridge::onResponse mServerState: OFF";
-			break;
-			case SupercolliderBridge::ScBridge::StateServer::RUN:
-			qDebug() << "ScBridge::onResponse mServerState: RUN";
-			break;
-			}
-			*/
-
-			if (mState == InterpretState::BOOTING || mState == InterpretState::SHUTTING)
-			{
-				//mState = InterpretState::OFF;
-				//switch (mInterpretState)
-				//{
-				//case StateInterpret::OFF:
-				mState = InterpretState::ON;
-				emit changeState(mState);
-				emit print("InterpretState::ON");
-
-				//	break;
-				//}
-			}
-
-
 		}
-		else if (selector == introspectionSelector)
-		{
-			//qDebug() << "INTROSPECTION" << data;
 
-			// DATA O VSECH CLASS PRO SUPERCOLIDER!!!!!!
-			// emit msgStatusAct(tr("INTROSPECTION message: %1").arg(data));
+		else if (selector == QStringLiteral("classLibraryRecompiled")) {
+			emit print("ScLang::onResponse selector: classLibraryRecompiled");
+			//mCompiled = true;
+			//emit classLibraryRecompiled();
 		}
-		else if (selector == classLibraryRecompiledSelector)
-		{
-			//qDebug() << "INTROSPECTION" << data;
 
-			// DATA O VSECH CLASS PRO SUPERCOLIDER!!!!!!
-			//emit msgStatusAct(tr("LibraryRecompiled message: %1").arg(data));
-		}
-		else
-		{
-			//emit msgStatusAct(tr("IPC message: %1").arg(data));
+		else if (selector == QStringLiteral("requestCurrentPath")) {
+
+			emit print("ScLang::onResponse selector: requestCurrentPath");
+			//	Main::documentManager()->sendActiveDocument();
 		}
 	}
 
-	void ScLang::evaluate(QString code) {
-		emit print(QString("ScLang::evaluate -> %1").arg(code));
-		bool synced = false;
-		bool silent = false;
-		bool printing = false;
+	void ScLang::onStart()
+	{
+		if (!mIpcServer->isListening()) // avoid a warning on stderr
+			mIpcServer->listen(mIpcServerName);
 
-		qint64 evalTime = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
-		qint64 syncTime;
-		int durationTime;
-
-		QTimer time;
-		time.setSingleShot(true);
-		time.start(lateFlagBreakTime);
-		//answer.append("NaN");
-
-		if (state() != QProcess::Running) {
-			emit print("Interpreter is not running!");
-			return;
-		}
-
-		QString command;
-		{
-			QEventLoop loop;
-			loop.connect(&time, SIGNAL(timeout()), SLOT(quit()));
-			loop.connect(this, SIGNAL(actSynced()), SLOT(quit()));
-			command = QStringLiteral("[\"syncFlag\",%1]").arg(code);
-
-			QByteArray bytesToWrite = command.toUtf8();
-			size_t writtenBytes = write(bytesToWrite);
-
-			if (writtenBytes != bytesToWrite.size()) {
-				emit print("Error when passing data to interpreter!");
-				return;
-			}
-
-			char commandChar = silent ? '\x1b' : '\x0c';
-			if (printing) { emit print(tr("evaluate: %1\r\n").arg(code)); }
-			write(&commandChar, 1);
-
-			loop.exec();
-		}
-
-		syncTime = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
-		durationTime = syncTime - evalTime;
-
-		if (printing) {
-			emit print(tr("synced [%1 ms]\r\n").arg(QString::number(durationTime)));
-		}
-
-
+		QString command = QStringLiteral("ScIDE.connect(\"%1\")").arg(mIpcServerName);
+		evaluate(command);
 	}
+
 
 	void ScLang::msgParser(QString msg)
 	{

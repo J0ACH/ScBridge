@@ -11,6 +11,9 @@
 #include <QDateTime>
 #include <QTimer>
 
+#include <QtCore/QFuture>
+#include <QtCore/QFutureWatcher>
+
 namespace SC {
 
 	class ScLang : public QProcess {
@@ -29,20 +32,25 @@ namespace SC {
 		};
 
 		public slots:
-		void begin();
-		void kill();
 		void reverse();
+		void startLanguage();
+		void stopLanguage();
 
 	signals:
 		void print(QString);
-		void changeState(InterpretState);
+		void changeState(ScLang::InterpretState);
 
 	private:
+		void onStart();
+		void onResponse(const QString&, const QString&);
+		qint32 arrayToInt(QByteArray);
+
 		QLocalServer * mIpcServer;
 		QLocalSocket *mIpcSocket;
 		QString mScLangPath;
 		QString mIpcServerName;
 		QByteArray mIpcData;
+		int mReadSize = 0;
 
 		bool mTerminationRequested;
 		QDateTime mTerminationRequestTime;
@@ -58,8 +66,8 @@ namespace SC {
 		private slots:
 		void onReadyRead();
 		void onNewIpcConnection();
+		void onProcessStateChanged(QProcess::ProcessState state);
 		void onIpcData();
-		void onResponse(const QString&, const QString&);
 		void finalizeConnection();
 	};
 

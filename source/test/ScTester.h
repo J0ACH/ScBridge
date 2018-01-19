@@ -7,7 +7,7 @@
 #include <QResizeEvent>
 #include <QGroupBox>
 #include <QCheckBox>
-//#include <QLabel>
+#include <QLabel>
 #include <QTextEdit>
 #include <QLineEdit>
 #include <QPushButton>
@@ -49,6 +49,7 @@ public:
 
 	public slots:
 	void cmdLineEvaluated();
+	void langStatusChanged(ScLang::InterpretState);
 
 protected:
 	void resizeEvent(QResizeEvent *event) override;
@@ -59,7 +60,7 @@ private:
 	QCheckBox *langRun;
 	QTextEdit *console;
 	QLineEdit *cmdLine;
-	//QLabel *status;
+	QLabel *status;
 };
 
 #endif // ! SCTESTER_H

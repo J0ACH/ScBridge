@@ -116,6 +116,7 @@ PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 
 	groupSC = new QGroupBox("Supercollider", this);
 	langRun = new QCheckBox("Interpretr", groupSC);
+	status = new QLabel("Status: OFF", groupSC);
 
 	groupConsole = new QGroupBox("Console", this);
 	console = new QTextEdit(groupConsole);
@@ -128,6 +129,10 @@ PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 	QObject::connect(langRun, SIGNAL(pressed()), lang, SLOT(reverse()));
 	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
 	QObject::connect(lang, SIGNAL(print(QString)), console, SLOT(append(QString)));
+	QObject::connect(
+		lang, SIGNAL(changeState(ScLang::InterpretState)),
+		this, SLOT(langStatusChanged(ScLang::InterpretState))
+	);
 
 	/*
 	status = new QLabel(this);
@@ -141,10 +146,34 @@ void PageLang::cmdLineEvaluated() {
 	qDebug() << "PageLang::cmdLine EVALUATED";
 }
 
+void PageLang::langStatusChanged(ScLang::InterpretState state) {
+	switch (state)
+	{
+	case ScLang::InterpretState::OFF:
+		status->setText("Status: OFF");
+		qDebug() << "PageLang::langStatusChanged: OFF";
+		break;
+	case ScLang::InterpretState::BOOTING:
+		status->setText("Status: BOOTING");
+		qDebug() << "PageLang::langStatusChanged: BOOTING";
+		break;
+	case ScLang::InterpretState::ON:
+		status->setText("Status: ON");
+		qDebug() << "PageLang::langStatusChanged: ON";
+		break;
+	case ScLang::InterpretState::SHUTTING:
+		status->setText("Status: SHUTTING");
+		qDebug() << "PageLang::langStatusChanged: SHUTTING";
+		break;
+	}
+
+}
+
 void PageLang::resizeEvent(QResizeEvent *event) {
 	QSize size = event->size();
 	groupSC->setGeometry(10, 10, size.width() - 20, 100);
 	langRun->setGeometry(10, 10, groupSC->width() - 20, 30);
+	status->setGeometry(150, 10, 100, 30);
 
 	groupConsole->setGeometry(10, 110, size.width() - 20, 300);
 	console->setGeometry(10, 20, groupConsole->width() - 20, groupConsole->height() - 30);
