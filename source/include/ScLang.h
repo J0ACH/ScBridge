@@ -6,6 +6,8 @@
 #include <QProcess>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
+#include <QBuffer>
+#include <QDataStream>
 #include <QDateTime>
 #include <QTimer>
 
@@ -25,20 +27,22 @@ namespace SC {
 			NORMAL,
 			ERROR
 		};
-		
+
 		public slots:
 		void begin();
 		void kill();
 		void reverse();
 
 	signals:
-		void print(QString); 
+		void print(QString);
+		void changeState(InterpretState);
 
 	private:
 		QLocalServer * mIpcServer;
 		QLocalSocket *mIpcSocket;
 		QString mScLangPath;
 		QString mIpcServerName;
+		QByteArray mIpcData;
 
 		bool mTerminationRequested;
 		QDateTime mTerminationRequestTime;
@@ -52,11 +56,11 @@ namespace SC {
 		void msgParser(QString);
 
 		private slots:
-		void actInterpretStart();
-		void interpretStarted();
-
 		void onReadyRead();
 		void onNewIpcConnection();
+		void onIpcData();
+		void onResponse(const QString&, const QString&);
+		void finalizeConnection();
 	};
 
 } // namespace SupercolliderBridge
