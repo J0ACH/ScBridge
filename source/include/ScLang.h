@@ -23,7 +23,6 @@ namespace SC {
 		ScLang(QObject *parent);
 
 		void setPath(QString);
-		void evaluate(QString);
 
 		enum class InterpretState { OFF, BOOTING, ON, SHUTTING };
 
@@ -31,6 +30,7 @@ namespace SC {
 		void switchInterpretr();
 		void startInterpreter();
 		void stopInterpretr();
+		void evaluate(QString);
 
 	signals:
 		void print(QString);

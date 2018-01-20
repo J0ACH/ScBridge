@@ -37,13 +37,15 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 	groupCmd = new QGroupBox("Cmd", this);
 	cmdLine = new QLineEdit(groupCmd);
 
-	QObject::connect(serverRun, SIGNAL(released()), server, SLOT(reverse()));
+	QObject::connect(serverRun, SIGNAL(released()), server, SLOT(switchServer()));
+	QObject::connect(this, SIGNAL(codeEvaluate(QString)), server, SLOT(evaluate(QString)));
 	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
 	QObject::connect(server, SIGNAL(print(QString)), console, SLOT(append(QString)));
 }
 
 void PageServer::cmdLineEvaluated() {
 	qDebug() << "PageServer::cmdLine EVALUATED";
+	emit codeEvaluate(cmdLine->text());
 }
 
 void PageServer::resizeEvent(QResizeEvent *event) {
@@ -75,6 +77,7 @@ PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 	cmdLine = new QLineEdit(groupCmd);
 
 	QObject::connect(langRun, SIGNAL(released()), lang, SLOT(switchInterpretr()));
+	QObject::connect(this, SIGNAL(codeEvaluate(QString)), lang, SLOT(evaluate(QString)));
 	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
 	QObject::connect(lang, SIGNAL(print(QString)), console, SLOT(append(QString)));
 	QObject::connect(
@@ -85,7 +88,8 @@ PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 
 void PageLang::cmdLineEvaluated() {
 	//console->append("PageLang::cmdLine EVALUATED");
-	lang->evaluate(cmdLine->text());
+//	lang->evaluate(cmdLine->text());
+	emit codeEvaluate(cmdLine->text());
 }
 
 void PageLang::langStatusChanged(ScLang::InterpretState state) {

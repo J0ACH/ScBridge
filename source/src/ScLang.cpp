@@ -28,10 +28,7 @@ namespace SC {
 	}
 
 	void ScLang::switchInterpretr() {
-		//if (mState == InterpretState::OFF) { this->startLanguage(); }
-		//else if (mState == InterpretState::ON) { this->kill(); }
-
-		switch (mState) {
+				switch (mState) {
 		case InterpretState::OFF:
 			startInterpreter();
 			break;

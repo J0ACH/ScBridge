@@ -18,11 +18,10 @@ namespace SC {
 		void setPath(QString);
 
 		public slots:
+		void switchServer();
+		void startServer();
+		void stopServer();
 		void evaluate(QString);
-		
-		void begin();		
-		void kill();
-		void reverse();
 
 	signals:
 		void print(QString);
@@ -38,7 +37,6 @@ namespace SC {
 		private slots:
 		void processMsgRecived();
 		void serverMsgRecived();
-		
 	};
 
 }

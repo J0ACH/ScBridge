@@ -5,10 +5,12 @@ namespace SC {
 
 	ScServer::ScServer(QObject *parent) : QProcess(parent) {
 		mScServerPath = "";
+		udpSocket = new QUdpSocket(this);
 		portTargetServer = 8050;
 		portListenServer = 8051;
 		mState = ServerState::OFF;
 		connect(this, SIGNAL(readyRead()), this, SLOT(processMsgRecived()));
+		connect(udpSocket, SIGNAL(readyRead()), this, SLOT(serverMsgRecived()));
 	}
 
 	void ScServer::setPath(QString path) {
@@ -18,7 +20,27 @@ namespace SC {
 		emit print(tr("ScServer::setPath (%1)").arg(mScServerPath));
 	}
 
-	void ScServer::begin() {
+	void ScServer::evaluate(QString code) {
+		if (mState == ServerState::ON)
+		{
+			emit print(tr("ScServer::evaluate(%1)").arg(code));
+			QByteArray ba = code.toUtf8();
+			udpSocket->writeDatagram(ba.data(), ba.size(), QHostAddress::LocalHost, portTargetServer);
+		}
+	}
+
+	void ScServer::switchServer() {
+
+		switch (mState) {
+		case ServerState::OFF:
+			startServer();
+			break;
+		default:
+			stopServer();
+		}
+	}
+
+	void ScServer::startServer() {
 		QStringList scServerArguments;
 		if (mState == ServerState::OFF)
 		{
@@ -34,9 +56,7 @@ namespace SC {
 			else
 			{
 				emit print(tr("Start scserver!"));
-				udpSocket = new QUdpSocket(this);
 				udpSocket->bind(QHostAddress::LocalHost, portListenServer);
-				connect(udpSocket, SIGNAL(readyRead()), this, SLOT(serverMsgRecived()));
 				mState = ServerState::ON;
 			}
 		}
@@ -46,26 +66,12 @@ namespace SC {
 		}
 	}
 
-	void ScServer::evaluate(QString code) {
-		if (mState == ServerState::ON)
-		{
-			emit print(tr("ScServer::evaluate(%1)").arg(code));
-			QByteArray ba = code.toUtf8();
-			udpSocket->writeDatagram(ba.data(), ba.size(), QHostAddress::LocalHost, portTargetServer);
-		}
-	}
-
-	void ScServer::kill() {
+	void ScServer::stopServer() {
 		evaluate("/quit");
 		//udpSocket->close();
 		mState = ServerState::OFF;
 	}
 
-	void ScServer::reverse() {
-		if (mState == ServerState::OFF) { this->begin(); }
-		else if (mState == ServerState::ON) { this->kill(); }
-
-	}
 
 	void ScServer::processMsgRecived() {
 

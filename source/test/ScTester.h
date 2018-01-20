@@ -27,7 +27,7 @@ public:
 	void cmdLineEvaluated();
 
 signals:
-	void codeEvaluated(QString);
+	void codeEvaluate(QString);
 
 protected:
 	void resizeEvent(QResizeEvent *event) override;
@@ -50,6 +50,9 @@ public:
 	public slots:
 	void cmdLineEvaluated();
 	void langStatusChanged(ScLang::InterpretState);
+	
+signals:
+	void codeEvaluate(QString);
 
 protected:
 	void resizeEvent(QResizeEvent *event) override;
