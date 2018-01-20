@@ -56,6 +56,7 @@ protected:
 
 private:
 	ScLang *lang;
+	//ScLangNEW *langNEW;
 	QGroupBox *groupSC, *groupConsole, *groupCmd;
 	QCheckBox *langRun;
 	QTextEdit *console;

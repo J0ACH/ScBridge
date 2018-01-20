@@ -13,52 +13,10 @@ int main(int argc, char *argv[]) {
 
 	QTabWidget *win = new QTabWidget();
 
-	//ScTester *win = new ScTester();
 	win->setGeometry(100, 100, 800, 550);
 	win->addTab(pServer, "Server");
 	win->addTab(pLang, "Interpreter");
 	win->show();
-
-	/*
-	ScBridge *lang = new ScBridge(win, "aaa");
-	lang->setPath("C:/Program Files/SuperCollider-3.9.0");
-	QObject::connect(&app, SIGNAL(aboutToQuit()), lang, SLOT(kill()));
-
-	QTextEdit *console = new QTextEdit(win);
-	console->setGeometry(20, 20, 680, 380);
-	console->setFont(QFont("Consolas", 8));
-	console->setReadOnly(true);
-	console->show();
-	QObject::connect(lang, SIGNAL(print(QString)), console, SLOT(append(QString)));
-
-	QLineEdit *cmdLine = new QLineEdit(win);
-	cmdLine->setGeometry(20, 420, 680, 30);
-	cmdLine->show();
-	QObject::connect(cmdLine, SIGNAL(returnPressed()), win, SLOT(cmdLineEvaluated()));
-
-	QPushButton *buttonInter = new QPushButton(win);
-	buttonInter->setGeometry(710, 20, 80, 30);
-	buttonInter->setText("kill");
-	buttonInter->show();
-
-
-	//sc->begin();
-
-	ScServer *server = new ScServer(win);
-	QObject::connect(server, SIGNAL(print(QString)), console, SLOT(append(QString)));
-	*/
-	/*
-	QObject::connect(
-		cmdLine, &QLineEdit::returnPressed,
-		cmdLineEnter
-	);
-	*/
-	//QObject::connect(&app, SIGNAL(aboutToQuit()), server, SLOT(kill()));
-	//QObject::connect(buttonInter, SIGNAL(pressed()), server, SLOT(kill()));
-
-	//server->setPath("C:/Program Files/SuperCollider-3.9.0");
-	//server->begin();
-	//server->status();
 
 	return app.exec();
 }
@@ -79,17 +37,9 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 	groupCmd = new QGroupBox("Cmd", this);
 	cmdLine = new QLineEdit(groupCmd);
 
-	QObject::connect(serverRun, SIGNAL(pressed()), server, SLOT(reverse()));
+	QObject::connect(serverRun, SIGNAL(released()), server, SLOT(reverse()));
 	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
 	QObject::connect(server, SIGNAL(print(QString)), console, SLOT(append(QString)));
-
-
-	/*
-	status = new QLabel(this);
-	status->setText("Server");
-	status->setGeometry(10, 10, 100, 30);
-	status->show();
-	*/
 }
 
 void PageServer::cmdLineEvaluated() {
@@ -106,8 +56,6 @@ void PageServer::resizeEvent(QResizeEvent *event) {
 
 	groupCmd->setGeometry(10, 410, size.width() - 20, 60);
 	cmdLine->setGeometry(10, 20, groupCmd->width() - 20, groupCmd->height() - 30);
-
-	//qDebug() << "PageServer::resizeEvent";
 }
 
 PageLang::PageLang(QWidget *parent) : QWidget(parent) {
@@ -125,21 +73,14 @@ PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 
 	groupCmd = new QGroupBox("Cmd", this);
 	cmdLine = new QLineEdit(groupCmd);
-
-	QObject::connect(langRun, SIGNAL(pressed()), lang, SLOT(reverse()));
+	
+	QObject::connect(langRun, SIGNAL(released()), lang, SLOT(switchInterpretr()));
 	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
 	QObject::connect(lang, SIGNAL(print(QString)), console, SLOT(append(QString)));
 	QObject::connect(
 		lang, SIGNAL(changeState(ScLang::InterpretState)),
 		this, SLOT(langStatusChanged(ScLang::InterpretState))
 	);
-
-	/*
-	status = new QLabel(this);
-	status->setText("Interpretr");
-	status->setGeometry(10, 10, 100, 30);
-	status->show();
-	*/
 }
 
 void PageLang::cmdLineEvaluated() {
@@ -168,7 +109,6 @@ void PageLang::langStatusChanged(ScLang::InterpretState state) {
 		qDebug() << "PageLang::langStatusChanged: SHUTTING";
 		break;
 	}
-
 }
 
 void PageLang::resizeEvent(QResizeEvent *event) {
@@ -182,8 +122,6 @@ void PageLang::resizeEvent(QResizeEvent *event) {
 
 	groupCmd->setGeometry(10, 410, size.width() - 20, 60);
 	cmdLine->setGeometry(10, 20, groupCmd->width() - 20, groupCmd->height() - 30);
-
-	//qDebug() << "PageServer::resizeEvent";
 }
 
 
