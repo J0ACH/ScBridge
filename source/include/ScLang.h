@@ -43,6 +43,7 @@ namespace SC {
 	private:
 		void onStart();
 		void onResponse(const QString&, const QString&);
+		void postQuitNotification();
 		qint32 arrayToInt(QByteArray);
 
 		QLocalServer * mIpcServer;

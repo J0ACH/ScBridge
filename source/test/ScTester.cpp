@@ -151,6 +151,7 @@ void PageLang::langStatusChanged(ScLang::InterpretState state) {
 	{
 	case ScLang::InterpretState::OFF:
 		status->setText("Status: OFF");
+		langRun->setChecked(false);
 		qDebug() << "PageLang::langStatusChanged: OFF";
 		break;
 	case ScLang::InterpretState::BOOTING:
@@ -159,6 +160,7 @@ void PageLang::langStatusChanged(ScLang::InterpretState state) {
 		break;
 	case ScLang::InterpretState::ON:
 		status->setText("Status: ON");
+		langRun->setChecked(true);
 		qDebug() << "PageLang::langStatusChanged: ON";
 		break;
 	case ScLang::InterpretState::SHUTTING:

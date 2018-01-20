@@ -76,12 +76,28 @@ namespace SC {
 
 	void ScLang::stopLanguage() {
 		qDebug() << "ScLang::stopLanguage()";
-		//if (mStateInterpret == StateInterpret::ON)
-		//{
-		this->evaluate("Server.killAll");
-		this->evaluate("0.exit");
-		//this->evaluate("Server.default.boot");
-		//}
+		mState = InterpretState::SHUTTING;
+		emit changeState(mState);
+		emit print("InterpretState::SHUTTING");
+
+		if (state() != QProcess::Running) {
+			emit print("Interpreter is not running!");
+			return;
+		}
+
+		evaluate("0.exit");
+		mTerminationRequested = true;
+		mTerminationRequestTime = QDateTime::currentDateTimeUtc();
+
+		bool finished = waitForFinished(1000);
+		if (!finished && (state() != QProcess::NotRunning)) {
+			terminate();
+			bool reallyFinished = waitForFinished(200);
+			if (!reallyFinished)
+				emit print("Failed to stop interpreter!");
+		}
+		closeWriteChannel();
+		mTerminationRequested = false;
 	}
 
 
@@ -161,6 +177,11 @@ namespace SC {
 	}
 	void ScLang::finalizeConnection() {
 		emit print("ScLang::finalizedConection()");
+
+		mState = InterpretState::OFF;
+		emit changeState(mState);
+		emit print("InterpretState::OFF");
+
 		mIpcData.clear();
 		mIpcSocket->deleteLater();
 		mIpcSocket = NULL;
@@ -178,12 +199,24 @@ namespace SC {
 			break;
 
 		case QProcess::NotRunning:
-			//postQuitNotification();
+			postQuitNotification();
 			//mCompiled = false;
 			break;
 		}
 	}
 
+	void ScLang::postQuitNotification()
+	{
+		QString message;
+		switch (exitStatus()) {
+		case QProcess::CrashExit:
+			message = tr("Interpreter has crashed or stopped forcefully. [Exit code: %1]\n").arg(exitCode());
+			break;
+		default:
+			message = tr("Interpreter has quit. [Exit code: %1]\n").arg(exitCode());
+		}
+		emit print(message);
+	}
 
 	void ScLang::onIpcData() {
 		mIpcData.append(mIpcSocket->readAll());
@@ -213,7 +246,7 @@ namespace SC {
 				if (in.status() != QDataStream::Ok)
 					return;
 
-				qDebug() << "ScLang::onIpcData selector:" << selector;
+				//qDebug() << "ScLang::onIpcData selector:" << selector;
 				onResponse(selector, message);
 				//emit response(selector, message);
 			}
@@ -261,10 +294,29 @@ namespace SC {
 
 	void ScLang::onResponse(const QString & selector, const QString & data)
 	{
-		if (selector == QStringLiteral("introspection")) {
-			emit print("ScLang::onResponse selector: introspection");
+
+		//emit print(tr("ScLang::onResponse selector: %1; data:%2").arg(selector, data));
+		/*
+		mState = InterpretState::ON;
+		emit changeState(mState);
+		emit print("ScLang::onStart");
+		*/
+
+		if (selector == QStringLiteral("defaultServerRunningChanged")) {
+			emit print("ScLang::onResponse selector: defaultServerRunningChanged");
+			emit print(tr("ScLang::onResponse data: %1").arg(data));
+			mState = InterpretState::ON;
+			emit changeState(mState);
+			emit print("InterpretState::ON");
+		}
+
+		/*
+		else if (selector == QStringLiteral("introspection")) {
+			// vypise vsechy classy v SC
+			//emit print("ScLang::onResponse selector: introspection");
+
 			//using ScLanguage::Introspection;
-			/*
+
 			auto watcher = new QFutureWatcher<Introspection>(this);
 			connect(watcher, &QFutureWatcher<Introspection>::finished, [=] {
 				try {
@@ -283,8 +335,9 @@ namespace SC {
 				return ScLanguage::Introspection(data);
 			}, data);
 			watcher->setFuture(future);
-			*/
+
 		}
+		*/
 
 		else if (selector == QStringLiteral("classLibraryRecompiled")) {
 			emit print("ScLang::onResponse selector: classLibraryRecompiled");
