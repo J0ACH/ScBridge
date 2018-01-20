@@ -26,14 +26,14 @@ public:
 	public slots:
 	void cmdLineEvaluated();
 
-	//signals:
-		//void codeEvaluated(QString);
+signals:
+	void codeEvaluated(QString);
 
 protected:
 	void resizeEvent(QResizeEvent *event) override;
 
 private:
-	ScServer *server;
+	ScServer * server;
 	QGroupBox *groupSC, *groupConsole, *groupCmd;
 	QCheckBox *serverRun;
 	QTextEdit *console;
@@ -55,8 +55,7 @@ protected:
 	void resizeEvent(QResizeEvent *event) override;
 
 private:
-	ScLang *lang;
-	//ScLangNEW *langNEW;
+	ScLang * lang;
 	QGroupBox *groupSC, *groupConsole, *groupCmd;
 	QCheckBox *langRun;
 	QTextEdit *console;

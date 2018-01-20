@@ -73,7 +73,7 @@ PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 
 	groupCmd = new QGroupBox("Cmd", this);
 	cmdLine = new QLineEdit(groupCmd);
-	
+
 	QObject::connect(langRun, SIGNAL(released()), lang, SLOT(switchInterpretr()));
 	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
 	QObject::connect(lang, SIGNAL(print(QString)), console, SLOT(append(QString)));
@@ -84,7 +84,8 @@ PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 }
 
 void PageLang::cmdLineEvaluated() {
-	qDebug() << "PageLang::cmdLine EVALUATED";
+	//console->append("PageLang::cmdLine EVALUATED");
+	lang->evaluate(cmdLine->text());
 }
 
 void PageLang::langStatusChanged(ScLang::InterpretState state) {
@@ -93,20 +94,16 @@ void PageLang::langStatusChanged(ScLang::InterpretState state) {
 	case ScLang::InterpretState::OFF:
 		status->setText("Status: OFF");
 		langRun->setChecked(false);
-		qDebug() << "PageLang::langStatusChanged: OFF";
 		break;
 	case ScLang::InterpretState::BOOTING:
 		status->setText("Status: BOOTING");
-		qDebug() << "PageLang::langStatusChanged: BOOTING";
 		break;
 	case ScLang::InterpretState::ON:
 		status->setText("Status: ON");
 		langRun->setChecked(true);
-		qDebug() << "PageLang::langStatusChanged: ON";
 		break;
 	case ScLang::InterpretState::SHUTTING:
 		status->setText("Status: SHUTTING");
-		qDebug() << "PageLang::langStatusChanged: SHUTTING";
 		break;
 	}
 }
