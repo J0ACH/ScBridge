@@ -86,9 +86,7 @@ namespace SC {
 	}
 
 	void ScLang::evaluate(QString code) {
-
-		bool silent = false;
-
+		
 		if (state() != QProcess::Running) {
 			emit print("Interpreter is not running!");
 			return;
@@ -102,6 +100,7 @@ namespace SC {
 			return;
 		}
 
+		bool silent = false;
 		char commandChar = silent ? '\x1b' : '\x0c';
 		write(&commandChar, 1);
 	}
@@ -198,13 +197,8 @@ namespace SC {
 				if (in.status() != QDataStream::Ok)
 					return;
 
-				//emit print(tr("ScLang::onResponse selector: %1; data:%2").arg(selector, message));
-				/*
-				mState = InterpretState::ON;
-				emit changeState(mState);
-				emit print("ScLang::onStart");
-				*/
-
+				//parserIpcMsg(selector, message);
+				
 				if (selector == QStringLiteral("defaultServerRunningChanged")) {
 					emit print("ScLang::onResponse selector: defaultServerRunningChanged");
 					emit print(tr("ScLang::onResponse data: %1").arg(message));
@@ -258,6 +252,39 @@ namespace SC {
 		} while ((mReadSize == 0 && avail > 4) || (mReadSize > 0 && avail > mReadSize));
 
 	}
+
+	void ScLang::parserIpcMsg(QString selector, QString data) {
+		
+		if (selector == QStringLiteral("defaultServerRunningChanged")) {
+			/*
+			bool serverRunningState = false;
+			bool serverUnresponsive = false;
+			std::string hostName;
+			int port = -1;
+
+			try {
+				const YAML::Node doc = YAML::Load(data.toStdString());
+				if (doc) {
+					assert(doc.IsSequence());
+
+					serverRunningState = doc[0].as<bool>();
+					hostName = doc[1].as<std::string>();
+					port = doc[2].as<int>();
+					serverUnresponsive = doc[3].as<bool>();
+				}
+			}
+			catch (...) {
+				return; // LATER: report error?
+			}
+
+			QString qstrHostName(hostName.c_str());
+
+			onRunningStateChanged(serverRunningState, qstrHostName, port);
+			emit runningStateChanged(serverRunningState, qstrHostName, port, serverUnresponsive);
+			*/
+		}
+	}
+
 
 	qint32 ScLang::arrayToInt(QByteArray source)
 	{

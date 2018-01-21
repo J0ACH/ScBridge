@@ -39,7 +39,7 @@ namespace SC {
 	private:
 		qint32 arrayToInt(QByteArray);
 
-		QLocalServer * mIpcServer;
+		QLocalServer *mIpcServer;
 		QLocalSocket *mIpcSocket;
 		QString mScLangPath;
 		QString mIpcServerName;
@@ -55,9 +55,11 @@ namespace SC {
 		private slots:
 		void onProcessStateChanged(QProcess::ProcessState state);
 		void onInterpreterMsg();
+
 		void onNewIpcConnection();
-		void onIpcMsg();
 		void onFinalizeIpcConnection();
+		void onIpcMsg();
+		void parserIpcMsg(QString, QString);
 	};
 
 } // namespace SupercolliderBridge

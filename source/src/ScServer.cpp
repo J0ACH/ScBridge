@@ -55,7 +55,6 @@ namespace SC {
 			else
 			{
 				emit print(tr("Start scserver!"));
-				//udpSocket->bind(QHostAddress::LocalHost, portListenServer);
 				udpSocket->connectToHost(QHostAddress::LocalHost, udpSocketPort);
 				mState = ServerState::ON;
 			}
@@ -68,7 +67,7 @@ namespace SC {
 
 	void ScServer::stopServer() {
 		evaluate("/quit");
-		//udpSocket->close();
+		//udpSocket->disconnectFromHost();
 		mState = ServerState::OFF;
 	}
 
@@ -91,6 +90,7 @@ namespace SC {
 
 	void ScServer::serverMsgRecived()
 	{
+		/*
 		QByteArray datagram;
 		QHostAddress sender;
 		quint16 senderPort;
@@ -109,6 +109,31 @@ namespace SC {
 		emit print(tr("ScServer::serverMsgRecived /n/t - data: %1 /n/t - size: %2 /n/t - sender: %3, /n/t - port: %4").arg(
 			postString, postSize, postSender, postPort)
 		);
+		*/
+		
+		while (udpSocket->hasPendingDatagrams())
+		{
+			size_t datagramSize = udpSocket->pendingDatagramSize();
+			QByteArray array(datagramSize, 0);
+			qint64 readSize = udpSocket->readDatagram(array.data(), datagramSize);
+			if (readSize == -1)
+				continue;
+
+			//processOscPacket(osc::ReceivedPacket(array.data(), datagramSize));
+			
+			/*
+			*/
+			QString postString = QString::fromUtf8(array.data());
+			QString postSize = QString::number(datagramSize);
+			emit print(tr("ScServer::serverMsgRecived /n/t - data: %1 /n/t - size: %2").arg(postString, postSize));
+		}
+
+		/*
+		foreach(QString oneLine, list)
+		{
+			emit print(tr("ScServer::serverMsgRecived /n/t - list: %1").arg(oneLine));
+		}
+		*/
 	}
 
 
