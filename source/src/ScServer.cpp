@@ -6,8 +6,7 @@ namespace SC {
 	ScServer::ScServer(QObject *parent) : QProcess(parent) {
 		mScServerPath = "";
 		udpSocket = new QUdpSocket(this);
-		portTargetServer = 8050;
-		portListenServer = 8051;
+		udpSocketPort = 8050;
 		mState = ServerState::OFF;
 		connect(this, SIGNAL(readyRead()), this, SLOT(processMsgRecived()));
 		connect(udpSocket, SIGNAL(readyRead()), this, SLOT(serverMsgRecived()));
@@ -25,7 +24,7 @@ namespace SC {
 		{
 			emit print(tr("ScServer::evaluate(%1)").arg(code));
 			QByteArray ba = code.toUtf8();
-			udpSocket->writeDatagram(ba.data(), ba.size(), QHostAddress::LocalHost, portTargetServer);
+			udpSocket->writeDatagram(ba.data(), ba.size(), QHostAddress::LocalHost, udpSocketPort);
 		}
 	}
 
@@ -44,7 +43,7 @@ namespace SC {
 		QStringList scServerArguments;
 		if (mState == ServerState::OFF)
 		{
-			scServerArguments << "-u" << QString::number(portTargetServer);
+			scServerArguments << "-u" << QString::number(udpSocketPort);
 			start(mScServerPath, scServerArguments);
 			mState = ServerState::BOOTING;
 			bool processStarted = QProcess::waitForStarted();
@@ -56,7 +55,8 @@ namespace SC {
 			else
 			{
 				emit print(tr("Start scserver!"));
-				udpSocket->bind(QHostAddress::LocalHost, portListenServer);
+				//udpSocket->bind(QHostAddress::LocalHost, portListenServer);
+				udpSocket->connectToHost(QHostAddress::LocalHost, udpSocketPort);
 				mState = ServerState::ON;
 			}
 		}
@@ -102,7 +102,13 @@ namespace SC {
 		}
 
 		QString postString = QString::fromUtf8(datagram);
-		emit print(tr("ScServer::serverMsgRecived (%1)").arg(postString));
+		QString postSize = QString::number(datagram.size());
+		QString postSender = sender.toString();
+		QString postPort = QString::number(senderPort);
+
+		emit print(tr("ScServer::serverMsgRecived /n/t - data: %1 /n/t - size: %2 /n/t - sender: %3, /n/t - port: %4").arg(
+			postString, postSize, postSender, postPort)
+		);
 	}
 
 

@@ -29,7 +29,7 @@ namespace SC {
 	private:
 		QString mScServerPath;
 		QUdpSocket *udpSocket;
-		int portTargetServer, portListenServer;
+		int udpSocketPort;
 
 		enum class ServerState { OFF, BOOTING, ON, SHUTTING };
 		ServerState mState;
