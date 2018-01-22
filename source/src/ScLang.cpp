@@ -21,9 +21,11 @@ namespace SC {
 	}
 
 	void ScLang::setPath(QString path) {
-		QString file = "sclang";
+		QString fileLang = "sclang";
+		QString fileSynth = "scsynth";
 		QString extension = "exe";
-		mScLangPath = QString("%1/%2.%3").arg(path, file, extension);
+		mScLangPath = QString("%1/%2.%3").arg(path, fileLang, extension);
+		mScSynthPath = QString("%1/%2.%3").arg(path, fileSynth, extension);
 		qDebug() << "ScLang::setPath " << mScLangPath;
 	}
 
@@ -136,7 +138,7 @@ namespace SC {
 	void ScLang::onProcessStateChanged(QProcess::ProcessState state)
 	{
 		emit print("ScLang::onProcessStateChanged()");
-
+		
 		switch (state) {
 		case QProcess::Starting:
 			break;
@@ -151,6 +153,7 @@ namespace SC {
 				mIpcServer->listen(mIpcServerName);
 			}
 			this->evaluate(QStringLiteral("ScIDE.connect(\"%1\")").arg(mIpcServerName));
+			this->evaluate(QStringLiteral("Server.program_(\"%1\")").arg(mScSynthPath));
 			break;
 
 		case QProcess::NotRunning:

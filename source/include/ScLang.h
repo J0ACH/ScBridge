@@ -41,7 +41,7 @@ namespace SC {
 
 		QLocalServer *mIpcServer;
 		QLocalSocket *mIpcSocket;
-		QString mScLangPath;
+		QString mScLangPath, mScSynthPath;
 		QString mIpcServerName;
 
 		QByteArray mIpcData;
