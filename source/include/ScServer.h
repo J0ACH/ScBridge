@@ -9,11 +9,15 @@
 
 namespace SC {
 
-	class ScServer : public QProcess {
+	class ScServer : public QProcess
+	{
 		Q_OBJECT
+
 
 	public:
 		ScServer(QObject *parent);
+
+		enum ServerState { OFF, BOOTING, ON, SHUTTING };
 
 		void setPath(QString);
 
@@ -25,16 +29,16 @@ namespace SC {
 
 	signals:
 		void print(QString);
+		void changeState(ScServer::ServerState);
 
 	private:
 		QString mScServerPath;
 		QUdpSocket *udpSocket;
 		int udpSocketPort;
-
-		enum class ServerState { OFF, BOOTING, ON, SHUTTING };
 		ServerState mState;
 
 		private slots:
+		void onProcessStateChanged(QProcess::ProcessState state);
 		void processMsgRecived();
 		void serverMsgRecived();
 	};

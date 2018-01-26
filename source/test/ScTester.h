@@ -17,6 +17,8 @@
 
 using namespace SC;
 
+// Server //////////////////////////////////////////////
+
 class PageServer : public QWidget {
 	Q_OBJECT
 
@@ -25,6 +27,7 @@ public:
 
 	public slots:
 	void cmdLineEvaluated();
+	void serverStatusChanged(ScServer::ServerState);
 
 signals:
 	void codeEvaluate(QString);
@@ -38,8 +41,10 @@ private:
 	QCheckBox *serverRun;
 	QTextEdit *console;
 	QLineEdit *cmdLine;
-	//QLabel *status;
+	QLabel *status;
 };
+
+// Interpretr //////////////////////////////////////////////
 
 class PageLang : public QWidget {
 	Q_OBJECT
@@ -50,7 +55,7 @@ public:
 	public slots:
 	void cmdLineEvaluated();
 	void langStatusChanged(ScLang::InterpretState);
-	
+
 signals:
 	void codeEvaluate(QString);
 

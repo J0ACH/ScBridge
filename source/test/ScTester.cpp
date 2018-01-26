@@ -21,6 +21,8 @@ int main(int argc, char *argv[]) {
 	return app.exec();
 }
 
+// Server //////////////////////////////////////////////
+
 PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 
 	server = new ScServer(this);
@@ -28,6 +30,7 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 
 	groupSC = new QGroupBox("Supercollider", this);
 	serverRun = new QCheckBox("Server", groupSC);
+	status = new QLabel("Status: OFF", groupSC);
 
 	groupConsole = new QGroupBox("Console", this);
 	console = new QTextEdit(groupConsole);
@@ -41,6 +44,10 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 	QObject::connect(this, SIGNAL(codeEvaluate(QString)), server, SLOT(evaluate(QString)));
 	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
 	QObject::connect(server, SIGNAL(print(QString)), console, SLOT(append(QString)));
+	QObject::connect(
+		server, SIGNAL(changeState(ScServer::ServerState)),
+		this, SLOT(serverStatusChanged(ScServer::ServerState))
+	);
 }
 
 void PageServer::cmdLineEvaluated() {
@@ -48,10 +55,31 @@ void PageServer::cmdLineEvaluated() {
 	emit codeEvaluate(cmdLine->text());
 }
 
+void PageServer::serverStatusChanged(ScServer::ServerState state) {
+	switch (state)
+	{
+	case ScServer::ServerState::OFF:
+		status->setText("Status: OFF");
+		serverRun->setChecked(false);
+		break;
+	case ScServer::ServerState::BOOTING:
+		status->setText("Status: BOOTING");
+		break;
+	case ScServer::ServerState::ON:
+		status->setText("Status: ON");
+		serverRun->setChecked(true);
+		break;
+	case ScServer::ServerState::SHUTTING:
+		status->setText("Status: SHUTTING");
+		break;
+	}
+}
+
 void PageServer::resizeEvent(QResizeEvent *event) {
 	QSize size = event->size();
 	groupSC->setGeometry(10, 10, size.width() - 20, 100);
 	serverRun->setGeometry(10, 10, groupSC->width() - 20, 30);
+	status->setGeometry(150, 10, 100, 30);
 
 	groupConsole->setGeometry(10, 110, size.width() - 20, 300);
 	console->setGeometry(10, 20, groupConsole->width() - 20, groupConsole->height() - 30);
@@ -59,6 +87,8 @@ void PageServer::resizeEvent(QResizeEvent *event) {
 	groupCmd->setGeometry(10, 410, size.width() - 20, 60);
 	cmdLine->setGeometry(10, 20, groupCmd->width() - 20, groupCmd->height() - 30);
 }
+
+// Interpretr //////////////////////////////////////////////
 
 PageLang::PageLang(QWidget *parent) : QWidget(parent) {
 	lang = new ScLang(this);

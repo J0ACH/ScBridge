@@ -8,6 +8,11 @@ namespace SC {
 		udpSocket = new QUdpSocket(this);
 		udpSocketPort = 8050;
 		mState = ServerState::OFF;
+
+		connect(
+			this, SIGNAL(stateChanged(QProcess::ProcessState)),
+			this, SLOT(onProcessStateChanged(QProcess::ProcessState))
+		);
 		connect(this, SIGNAL(readyRead()), this, SLOT(processMsgRecived()));
 		connect(udpSocket, SIGNAL(readyRead()), this, SLOT(serverMsgRecived()));
 	}
@@ -41,40 +46,54 @@ namespace SC {
 
 	void ScServer::startServer() {
 		QStringList scServerArguments;
-		if (mState == ServerState::OFF)
+
+		scServerArguments << "-u" << QString::number(udpSocketPort);
+		start(mScServerPath, scServerArguments);
+		bool processStarted = QProcess::waitForStarted();
+		if (!processStarted)
 		{
-			scServerArguments << "-u" << QString::number(udpSocketPort);
-			start(mScServerPath, scServerArguments);
-			mState = ServerState::BOOTING;
-			bool processStarted = QProcess::waitForStarted();
-			if (!processStarted)
-			{
-				mState = ServerState::OFF;
-				emit print(tr("Failed to start scserver!"));
-			}
-			else
-			{
-				emit print(tr("Start scserver!"));
-				udpSocket->connectToHost(QHostAddress::LocalHost, udpSocketPort);
-				mState = ServerState::ON;
-			}
+			emit print(tr("Failed to start scserver!"));
 		}
 		else
 		{
-			emit print("ScServer is running");
+			emit print(tr("Start scserver!"));
+			udpSocket->connectToHost(QHostAddress::LocalHost, udpSocketPort);
 		}
 	}
 
 	void ScServer::stopServer() {
 		evaluate("/quit");
 		//udpSocket->disconnectFromHost();
-		mState = ServerState::OFF;
 	}
 
+	void ScServer::onProcessStateChanged(QProcess::ProcessState state)
+	{
+		emit print("ScLang::onProcessStateChanged()");
+
+		switch (state) {
+		case QProcess::Starting:
+			emit print("ScServer::Starting");
+			mState = ServerState::BOOTING;
+			emit changeState(mState);
+			break;
+
+		case QProcess::Running:
+			emit print("ScServer::Running");
+			mState = ServerState::ON;
+			emit changeState(mState);
+			break;
+
+		case QProcess::NotRunning:
+			emit print("ScServer::NotRunning");
+			mState = ServerState::OFF;
+			emit changeState(mState);
+			break;
+		}
+	}
 
 	void ScServer::processMsgRecived() {
 
-		//emit print("ScServer::incomingMsg");
+		emit print("ScServer::processMsgRecived() START !!!!!!!!");
 
 		QByteArray out = QProcess::readAll();
 		QString postString = QString::fromUtf8(out);
@@ -86,6 +105,8 @@ namespace SC {
 			emit print(oneLine);
 			qDebug() << oneLine;
 		}
+
+		emit print("ScServer::processMsgRecived() END !!!!!!!!");
 	}
 
 	void ScServer::serverMsgRecived()
@@ -110,7 +131,7 @@ namespace SC {
 			postString, postSize, postSender, postPort)
 		);
 		*/
-		
+
 		while (udpSocket->hasPendingDatagrams())
 		{
 			size_t datagramSize = udpSocket->pendingDatagramSize();
@@ -120,7 +141,7 @@ namespace SC {
 				continue;
 
 			//processOscPacket(osc::ReceivedPacket(array.data(), datagramSize));
-			
+
 			/*
 			*/
 			QString postString = QString::fromUtf8(array.data());
