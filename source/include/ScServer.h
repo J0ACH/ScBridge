@@ -7,6 +7,12 @@
 #include <QNetworkDatagram>
 #include <QHostAddress>
 
+#include "Oscpkt.h"
+#include <iostream>
+
+using namespace oscpkt;
+using namespace std;
+
 namespace SC {
 
 	class ScServer : public QProcess
@@ -36,6 +42,10 @@ namespace SC {
 		QUdpSocket *udpSocket;
 		int udpSocketPort;
 		ServerState mState;
+
+		QByteArray oscData;
+		
+		PacketReader pr;
 
 		private slots:
 		void onProcessStateChanged(QProcess::ProcessState state);

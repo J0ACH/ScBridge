@@ -27,8 +27,11 @@ namespace SC {
 	void ScServer::evaluate(QString code) {
 		if (mState == ServerState::ON)
 		{
+			//QString msg = QStringLiteral("[%1]").arg(code);
+			//emit print(tr("ScServer::evaluate(%1)").arg(msg));
 			emit print(tr("ScServer::evaluate(%1)").arg(code));
 			QByteArray ba = code.toUtf8();
+			//QByteArray ba = msg.toUtf8();
 			udpSocket->writeDatagram(ba.data(), ba.size(), QHostAddress::LocalHost, udpSocketPort);
 		}
 	}
@@ -68,32 +71,21 @@ namespace SC {
 
 	void ScServer::onProcessStateChanged(QProcess::ProcessState state)
 	{
-		emit print("ScLang::onProcessStateChanged()");
-
 		switch (state) {
 		case QProcess::Starting:
-			emit print("ScServer::Starting");
 			mState = ServerState::BOOTING;
-			emit changeState(mState);
 			break;
-
 		case QProcess::Running:
-			emit print("ScServer::Running");
 			mState = ServerState::ON;
-			emit changeState(mState);
 			break;
-
 		case QProcess::NotRunning:
-			emit print("ScServer::NotRunning");
 			mState = ServerState::OFF;
-			emit changeState(mState);
 			break;
 		}
+		emit changeState(mState);
 	}
 
 	void ScServer::processMsgRecived() {
-
-		emit print("ScServer::processMsgRecived() START !!!!!!!!");
 
 		QByteArray out = QProcess::readAll();
 		QString postString = QString::fromUtf8(out);
@@ -103,14 +95,16 @@ namespace SC {
 		{
 			oneLine = oneLine.replace("\t", "    ");
 			emit print(oneLine);
-			qDebug() << oneLine;
 		}
-
-		emit print("ScServer::processMsgRecived() END !!!!!!!!");
 	}
 
 	void ScServer::serverMsgRecived()
 	{
+		emit print("ScServer::serverMsgRecived()");
+
+		
+
+
 		/*
 		QByteArray datagram;
 		QHostAddress sender;
@@ -132,23 +126,42 @@ namespace SC {
 		);
 		*/
 
+
 		while (udpSocket->hasPendingDatagrams())
 		{
 			size_t datagramSize = udpSocket->pendingDatagramSize();
 			QByteArray array(datagramSize, 0);
 			qint64 readSize = udpSocket->readDatagram(array.data(), datagramSize);
 			if (readSize == -1)
+			{
+				emit print(tr("ScServer readSize: %1").arg(QString::number(readSize)));
 				continue;
+			}
+			else
+			{
+				emit print(tr("ScServer ELSE readSize: %1").arg(QString::number(readSize)));
+			}
 
 			//processOscPacket(osc::ReceivedPacket(array.data(), datagramSize));
 
-			/*
-			*/
 			QString postString = QString::fromUtf8(array.data());
 			QString postSize = QString::number(datagramSize);
+
 			emit print(tr("ScServer::serverMsgRecived /n/t - data: %1 /n/t - size: %2").arg(postString, postSize));
+
+			for (int i = 0; i < datagramSize; i++) {
+				QString msg = QString(array.at(i));
+				emit print(tr("msg[%1]: %2").arg(QString::number(i), msg));
+			}
+			//QString msg0 = QString(array.at(0));
+			//QString msg1 = QString(array.at(1));
+
+			
+			//emit print(tr("ScServer MSG: %1").arg(QString::fromUtf8(oscData)));
 		}
 
+		/*
+		*/
 		/*
 		foreach(QString oneLine, list)
 		{
