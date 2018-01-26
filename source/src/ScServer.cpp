@@ -100,74 +100,49 @@ namespace SC {
 
 	void ScServer::serverMsgRecived()
 	{
-		emit print("ScServer::serverMsgRecived()");
-
-		
-
-
-		/*
-		QByteArray datagram;
-		QHostAddress sender;
-		quint16 senderPort;
-
-		while (udpSocket->hasPendingDatagrams())
-		{
-			datagram.resize(udpSocket->pendingDatagramSize());
-			udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
-		}
-
-		QString postString = QString::fromUtf8(datagram);
-		QString postSize = QString::number(datagram.size());
-		QString postSender = sender.toString();
-		QString postPort = QString::number(senderPort);
-
-		emit print(tr("ScServer::serverMsgRecived /n/t - data: %1 /n/t - size: %2 /n/t - sender: %3, /n/t - port: %4").arg(
-			postString, postSize, postSender, postPort)
-		);
-		*/
-
+		QByteArray msg;
+		int msgSize;
 
 		while (udpSocket->hasPendingDatagrams())
 		{
 			size_t datagramSize = udpSocket->pendingDatagramSize();
 			QByteArray array(datagramSize, 0);
 			qint64 readSize = udpSocket->readDatagram(array.data(), datagramSize);
-			if (readSize == -1)
-			{
-				emit print(tr("ScServer readSize: %1").arg(QString::number(readSize)));
-				continue;
-			}
-			else
-			{
-				emit print(tr("ScServer ELSE readSize: %1").arg(QString::number(readSize)));
-			}
-
-			//processOscPacket(osc::ReceivedPacket(array.data(), datagramSize));
-
-			QString postString = QString::fromUtf8(array.data());
-			QString postSize = QString::number(datagramSize);
-
-			emit print(tr("ScServer::serverMsgRecived /n/t - data: %1 /n/t - size: %2").arg(postString, postSize));
-
-			for (int i = 0; i < datagramSize; i++) {
-				QString msg = QString(array.at(i));
-				emit print(tr("msg[%1]: %2").arg(QString::number(i), msg));
-			}
-			//QString msg0 = QString(array.at(0));
-			//QString msg1 = QString(array.at(1));
-
-			
-			//emit print(tr("ScServer MSG: %1").arg(QString::fromUtf8(oscData)));
+			if (readSize == -1) { continue; }
+			msg = array;
+			msgSize = datagramSize;
 		}
 
+		for (int i = 0; i < msgSize; i++) {
+			QString ch = msg.at(i);
+			emit print(tr("msg[%1]: %2").arg(QString::number(i), ch));
+		}
+
+
+
+		//emit print("ScServer::serverMsgRecived()");
 		/*
-		*/
-		/*
-		foreach(QString oneLine, list)
+		while (udpSocket->hasPendingDatagrams())
 		{
-			emit print(tr("ScServer::serverMsgRecived /n/t - list: %1").arg(oneLine));
+			size_t datagramSize = udpSocket->pendingDatagramSize();
+			QByteArray array(datagramSize, 0);
+			qint64 readSize = udpSocket->readDatagram(array.data(), datagramSize);
+			if (readSize == -1) { continue; }
+
+			emit print(tr("ScServer read end readSize: %1").arg(QString::number(readSize)));
+
+			pr.init(array.data(), datagramSize);
+			oscpkt::Message *msg;
+			while (pr.isOk() && (msg = pr.popMessage()) != 0) {
+				if (msg->match("/quit").isOkNoMoreArgs()) {
+					emit print("ScServer QUIT call");
+				}
+			}
 		}
 		*/
+
+
+
 	}
 
 
