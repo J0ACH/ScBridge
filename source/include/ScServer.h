@@ -7,15 +7,9 @@
 #include <QNetworkDatagram>
 #include <QHostAddress>
 
-//#include "oscpkt.hh"
-//#include "udp.hh"
-//using namespace oscpkt;
-
-
 #include <osc/OscReceivedElements.h>
 #include <osc/OscOutboundPacketStream.h>
-
-//using namespace std;
+using namespace osc;
 
 namespace SC {
 
@@ -44,36 +38,10 @@ namespace SC {
 		QString mScServerPath;
 		QUdpSocket *udpSocket;
 		int udpSocketPort;
-		ServerState mState;
+		ServerState mState;		
 
-		QByteArray oscData;
-		
-		//PacketReader pr;
-
-
-		void processOscMessage(const osc::ReceivedMessage &);
-
-		void processOscPacket(const osc::ReceivedPacket & packet)
-		{
-			if (packet.IsMessage())
-				processOscMessage(osc::ReceivedMessage(packet));
-			else
-				processOscBundle(osc::ReceivedBundle(packet));
-		}
-
-		void processOscBundle(const osc::ReceivedBundle & bundle)
-		{
-			for (auto iter = bundle.ElementsBegin(); iter != bundle.ElementsEnd(); ++iter)
-			{
-				const osc::ReceivedBundleElement & element = *iter;
-				if (element.IsMessage())
-					processOscMessage(osc::ReceivedMessage(element));
-				else
-					processOscBundle(osc::ReceivedBundle(element));
-			}
-		}
-
-
+		void parseOscMsg(ReceivedMessage);
+		void parseOscBundle(ReceivedBundle);
 
 		private slots:
 		void onProcessStateChanged(QProcess::ProcessState state);
