@@ -603,7 +603,7 @@ namespace oscpkt {
 				if (storage.size() - bundles.back() == 16) {
 					pod2bytes<uint32_t>(0, storage.getBytes(4)); // the 'empty bundle' case, not very elegant
 				}
-				if (bundles.size()>1) { // no size stored for the top-level bundle
+				if (bundles.size() > 1) { // no size stored for the top-level bundle
 					pod2bytes<uint32_t>(uint32_t(storage.size() - bundles.back()), storage.begin() + bundles.back() - 4);
 				}
 				bundles.pop_back();
@@ -616,7 +616,7 @@ namespace oscpkt {
 		*/
 		PacketWriter &addMessage(const Message &msg) {
 			if (storage.size() != 0 && bundles.empty()) OSCPKT_SET_ERR(BUNDLE_REQUIRED_FOR_MULTI_MESSAGES);
-			else msg.packMessage(storage, bundles.size()>0);
+			else msg.packMessage(storage, bundles.size() > 0);
 			if (!msg.isOk()) OSCPKT_SET_ERR(msg.getErr());
 			return *this;
 		}

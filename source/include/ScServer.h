@@ -7,18 +7,21 @@
 #include <QNetworkDatagram>
 #include <QHostAddress>
 
-#include "Oscpkt.h"
-#include <iostream>
+//#include "oscpkt.hh"
+//#include "udp.hh"
+//using namespace oscpkt;
 
-using namespace oscpkt;
-using namespace std;
+
+#include <osc/OscReceivedElements.h>
+#include <osc/OscOutboundPacketStream.h>
+
+//using namespace std;
 
 namespace SC {
 
 	class ScServer : public QProcess
 	{
 		Q_OBJECT
-
 
 	public:
 		ScServer(QObject *parent);
@@ -45,7 +48,32 @@ namespace SC {
 
 		QByteArray oscData;
 		
-		PacketReader pr;
+		//PacketReader pr;
+
+
+		void processOscMessage(const osc::ReceivedMessage &);
+
+		void processOscPacket(const osc::ReceivedPacket & packet)
+		{
+			if (packet.IsMessage())
+				processOscMessage(osc::ReceivedMessage(packet));
+			else
+				processOscBundle(osc::ReceivedBundle(packet));
+		}
+
+		void processOscBundle(const osc::ReceivedBundle & bundle)
+		{
+			for (auto iter = bundle.ElementsBegin(); iter != bundle.ElementsEnd(); ++iter)
+			{
+				const osc::ReceivedBundleElement & element = *iter;
+				if (element.IsMessage())
+					processOscMessage(osc::ReceivedMessage(element));
+				else
+					processOscBundle(osc::ReceivedBundle(element));
+			}
+		}
+
+
 
 		private slots:
 		void onProcessStateChanged(QProcess::ProcessState state);

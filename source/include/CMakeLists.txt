@@ -2,6 +2,6 @@
 set(ScBridge_hdr
 	${CMAKE_CURRENT_LIST_DIR}/ScLang.h
 	${CMAKE_CURRENT_LIST_DIR}/ScServer.h
-	${CMAKE_CURRENT_LIST_DIR}/Oscpkt.h
+	#${CMAKE_CURRENT_LIST_DIR}/Oscpkt.h
 	PARENT_SCOPE
 )
