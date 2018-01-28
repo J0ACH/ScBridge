@@ -145,10 +145,12 @@ namespace SC {
 	void ScServer::parseOscMsg(ReceivedMessage message) {
 		QString pattern = QString(message.AddressPattern());
 		int argCnt = message.ArgumentCount();
-
-		emit print(tr("ScServer::parseOscMsg pattern: %1 argCnt:%2").arg(
+		QString argTypes = QString(message.TypeTags());
+		
+		emit print(tr("ScServer::parseOscMsg pattern: %1 argCnt:%2, argTypes:%3").arg(
 			pattern,
-			QString::number(argCnt)
+			QString::number(argCnt),
+			argTypes
 		));
 
 		if (pattern == "/status.reply") {
