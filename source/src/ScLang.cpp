@@ -1,4 +1,3 @@
-
 #include "ScLang.h"
 
 namespace SC {
@@ -30,7 +29,7 @@ namespace SC {
 	}
 
 	void ScLang::switchInterpretr() {
-				switch (mState) {
+		switch (mState) {
 		case InterpretState::OFF:
 			startInterpreter();
 			break;
@@ -88,7 +87,7 @@ namespace SC {
 	}
 
 	void ScLang::evaluate(QString code) {
-		
+
 		if (state() != QProcess::Running) {
 			emit print("Interpreter is not running!");
 			return;
@@ -138,7 +137,7 @@ namespace SC {
 	void ScLang::onProcessStateChanged(QProcess::ProcessState state)
 	{
 		emit print("ScLang::onProcessStateChanged()");
-		
+
 		switch (state) {
 		case QProcess::Starting:
 			break;
@@ -166,7 +165,7 @@ namespace SC {
 				message = tr("Interpreter has quit. [Exit code: %1]\n").arg(exitCode());
 			}
 			emit print(message);
-			
+
 			//mCompiled = false;
 			break;
 		}
@@ -201,7 +200,7 @@ namespace SC {
 					return;
 
 				//parserIpcMsg(selector, message);
-				
+
 				if (selector == QStringLiteral("defaultServerRunningChanged")) {
 					emit print("ScLang::onResponse selector: defaultServerRunningChanged");
 					emit print(tr("ScLang::onResponse data: %1").arg(message));
@@ -215,9 +214,7 @@ namespace SC {
 				else if (selector == QStringLiteral("introspection")) {
 				// vypise vsechy classy v SC
 				//emit print("ScLang::onResponse selector: introspection");
-
 				//using ScLanguage::Introspection;
-
 				auto watcher = new QFutureWatcher<Introspection>(this);
 				connect(watcher, &QFutureWatcher<Introspection>::finished, [=] {
 				try {
@@ -230,13 +227,11 @@ namespace SC {
 				}
 				watcher->deleteLater();
 				});
-
 				// Start the computation.
 				QFuture<Introspection> future = QtConcurrent::run([](QString data) {
 				return ScLanguage::Introspection(data);
 				}, data);
 				watcher->setFuture(future);
-
 				}
 				*/
 
@@ -257,31 +252,27 @@ namespace SC {
 	}
 
 	void ScLang::parserIpcMsg(QString selector, QString data) {
-		
+
 		if (selector == QStringLiteral("defaultServerRunningChanged")) {
 			/*
 			bool serverRunningState = false;
 			bool serverUnresponsive = false;
 			std::string hostName;
 			int port = -1;
-
 			try {
-				const YAML::Node doc = YAML::Load(data.toStdString());
-				if (doc) {
-					assert(doc.IsSequence());
-
-					serverRunningState = doc[0].as<bool>();
-					hostName = doc[1].as<std::string>();
-					port = doc[2].as<int>();
-					serverUnresponsive = doc[3].as<bool>();
-				}
+			const YAML::Node doc = YAML::Load(data.toStdString());
+			if (doc) {
+			assert(doc.IsSequence());
+			serverRunningState = doc[0].as<bool>();
+			hostName = doc[1].as<std::string>();
+			port = doc[2].as<int>();
+			serverUnresponsive = doc[3].as<bool>();
+			}
 			}
 			catch (...) {
-				return; // LATER: report error?
+			return; // LATER: report error?
 			}
-
 			QString qstrHostName(hostName.c_str());
-
 			onRunningStateChanged(serverRunningState, qstrHostName, port);
 			emit runningStateChanged(serverRunningState, qstrHostName, port, serverUnresponsive);
 			*/
@@ -320,7 +311,6 @@ namespace SC {
 			{
 			QString msg = msgLines.at(i);
 			msg = msg.replace("\r", "");
-
 			if (msg.startsWith("ERROR:"))
 			{
 			emit msgErrorAct(msg);

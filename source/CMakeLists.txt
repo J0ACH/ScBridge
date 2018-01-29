@@ -14,8 +14,7 @@ add_subdirectory (externalLibs/oscpack)
 add_library(ScBridge SHARED
 	${ScBridge_hdr}
 	${ScBridge_src}
-	
-	#${OscPkt_hdr}
+		#${OscPkt_hdr}
 )
 
 target_include_directories(ScBridge 
