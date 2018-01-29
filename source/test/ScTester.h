@@ -7,6 +7,7 @@
 #include <QResizeEvent>
 #include <QGroupBox>
 #include <QCheckBox>
+#include <QSpinBox>
 #include <QLabel>
 #include <QTextEdit>
 #include <QLineEdit>
@@ -27,7 +28,9 @@ public:
 
 	public slots:
 	void cmdLineEvaluated();
+	void portChanged();
 	void serverStatusChanged(ScServer::ServerState);
+	void statusReplay(int, int, int, int, float, float);
 
 signals:
 	void codeEvaluate(QString);
@@ -36,12 +39,13 @@ protected:
 	void resizeEvent(QResizeEvent *event) override;
 
 private:
-	ScServer * server;
+	ScServer *server;
 	QGroupBox *groupSC, *groupConsole, *groupCmd;
 	QCheckBox *serverRun;
 	QTextEdit *console;
 	QLineEdit *cmdLine;
-	QLabel *status;
+	QSpinBox *boxPort;
+	QLabel *statusState, *statusInfo;
 };
 
 // Interpretr //////////////////////////////////////////////

@@ -6,6 +6,7 @@
 #include <QUdpSocket>
 #include <QNetworkDatagram>
 #include <QHostAddress>
+#include <QTimer>
 
 #include <osc/OscReceivedElements.h>
 #include <osc/OscOutboundPacketStream.h>
@@ -23,22 +24,29 @@ namespace SC {
 		enum ServerState { OFF, BOOTING, ON, SHUTTING };
 
 		void setPath(QString);
+		void setPort(int);
 
 		public slots:
 		void switchServer();
 		void startServer();
 		void stopServer();
 		void evaluate(QString);
+		void evaluate(QString, int);
+
+		void evaluateStatus();
 
 	signals:
 		void print(QString);
 		void changeState(ScServer::ServerState);
+		void statusReplay(int, int, int, int, float, float);
 
 	private:
 		QString mScServerPath;
 		QUdpSocket *udpSocket;
 		int udpSocketPort;
-		ServerState mState;		
+		ServerState mState;
+
+		QTimer *clockStatus;
 
 		void parseOscMsg(ReceivedMessage);
 		void parseOscBundle(ReceivedBundle);
