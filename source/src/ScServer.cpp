@@ -45,7 +45,7 @@ namespace SC {
 		p << BeginMessage(msg) << EndMessage;
 		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
 	}
-	
+
 	void ScServer::switchServer() {
 
 		switch (mState) {
@@ -56,7 +56,6 @@ namespace SC {
 			stopServer();
 		}
 	}
-
 	void ScServer::startServer() {
 		QStringList scServerArguments;
 
@@ -65,17 +64,18 @@ namespace SC {
 		bool processStarted = QProcess::waitForStarted();
 		if (!processStarted)
 		{
-			emit print(tr("Failed to start scserver!"));
+			emit print("Failed to start scserver!");
 		}
 		else
 		{
-			emit print(tr("Start scserver!"));
+			emit print("Start scserver!");
 			udpSocket->connectToHost(QHostAddress::LocalHost, udpSocketPort);
 			clockStatus->start(1000);
 		}
 	}
-
 	void ScServer::stopServer() {
+		mState = ServerState::SHUTTING;
+		emit changeState(mState);
 		clockStatus->stop();
 		this->quit();
 		//udpSocket->disconnectFromHost();
@@ -109,7 +109,6 @@ namespace SC {
 			emit print(oneLine);
 		}
 	}
-
 	void ScServer::serverMsgRecived()
 	{
 		while (udpSocket->hasPendingDatagrams())
@@ -140,34 +139,54 @@ namespace SC {
 		QString argTypes = QString(message.TypeTags());
 
 		ReceivedMessageArgumentStream args = message.ArgumentStream();
+		ReceivedMessage::const_iterator arg = message.ArgumentsBegin();
 
 		if (pattern != "/status.reply") {
-			emit print(tr("ScServer::parseOscMsg pattern: %1 argCnt:%2, argTypes:%3").arg(
+			emit print("ScServer::parseOscMsg");
+			emit print(tr("- pattern: %1 argCnt:%2, argTypes:%3").arg(
 				pattern,
 				QString::number(argCnt),
 				argTypes
 			));
+
+			for (int i = 0; i < argCnt; i++) {
+				if (arg->IsBool()) {
+					bool a = (arg++)->AsBoolUnchecked();
+					emit print(tr("\t %1) - bool: %2").arg(QString::number(i), a ? "true" : "false"));
+				}
+				else if (arg->IsInt32()) {
+					int a = (arg++)->AsInt32Unchecked();
+					emit print(tr("\t %1) - int: %2").arg(QString::number(i), QString::number(a)));
+				}
+				else if (arg->IsFloat()) {
+					float a = (arg++)->AsFloatUnchecked();
+					emit print(tr("\t %1) - float: %2").arg(QString::number(i), QString::number(a)));
+				}
+				else if (arg->IsString()) {
+					const char *a = (arg++)->AsStringUnchecked();
+					emit print(tr("\t %1) - string: %2").arg(QString::number(i), a));
+				}
+				else {
+					emit print("\t %1) - unknown type");
+				}
+			}
 		}
 
-		if (pattern == "/status.reply") {
-			int unused;
-			int ugenCount;
-			int synthCount;
-			int groupCount;
-			int defCount;
-			float avgCPU;
-			float peakCPU;
+		if (pattern == "/done") {
+			const char* cmd;
+			args >> cmd;
+			if (cmd == "/quit") {
+				emit print("QUIT DONE");
+			}
+			else {
+				emit print(tr("DONE: %1").arg(cmd));
+			}
+		}
+		else if (pattern == "/status.reply") {
+			int unused, ugenCount, synthCount, groupCount, defCount;
+			float avgCPU, peakCPU;
 
-			//auto args = message.ArgumentStream();
-
-			args >> unused
-				>> ugenCount
-				>> synthCount
-				>> groupCount
-				>> defCount
-				>> avgCPU
-				>> peakCPU;
-
+			args >> unused >> ugenCount >> synthCount >> groupCount >> defCount >> avgCPU >> peakCPU;
 			emit statusReplay(ugenCount, synthCount, groupCount, defCount, avgCPU, peakCPU);
 		}
 		else if (pattern == "/version.reply") {
@@ -179,12 +198,7 @@ namespace SC {
 			const char* gitBranchName;
 			const char* commitHash;
 
-			args >> programName
-				>> versionMajor
-				>> versionMinor
-				>> versionPatch
-				>> gitBranchName
-				>> commitHash;
+			args >> programName >> versionMajor >> versionMinor >> versionPatch >> gitBranchName >> commitHash;
 
 			emit print(tr("ScServer::parseOscMsg /version.replay program:%1, version:%2.%3%4, branch:%5, commit:%6").arg(
 				programName,
