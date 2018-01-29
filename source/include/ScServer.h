@@ -35,7 +35,7 @@ namespace SC {
 		void status();
 		void version();
 		void d_load(QString);
-		void s_new(int);
+		void s_new(QString, int);
 		void n_free(int);
 
 	signals:
@@ -53,6 +53,7 @@ namespace SC {
 
 		void parseOscMsg(ReceivedMessage);
 		void parseOscBundle(ReceivedBundle);
+		void printOscMsg();
 
 		private slots:
 		void onProcessStateChanged(QProcess::ProcessState state);
@@ -60,7 +61,7 @@ namespace SC {
 		void serverMsgRecived();
 
 		void evaluate(QString);
-		void evaluate(QString, int);
+		
 	};
 
 }

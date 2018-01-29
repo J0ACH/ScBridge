@@ -95,7 +95,7 @@ void PageServer::statusReplay(int ugenCount, int synthCount, int groupCount, int
 void PageServer::synthNew() {
 	//qDebug() << "PageServer::portChanged" << boxPort;
 	console->append(tr("PageServer::synthNew %1").arg(QString::number(boxSynth->value())));
-	server->s_new(boxSynth->value());	
+	server->s_new("default", boxSynth->value());	
 }
 void PageServer::nodeFree() {
 	//qDebug() << "PageServer::portChanged" << boxPort;

@@ -45,21 +45,7 @@ namespace SC {
 		p << BeginMessage(msg) << EndMessage;
 		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
 	}
-	void ScServer::evaluate(QString code, int id) {
-
-		char buffer[IP_MTU_SIZE];
-		OutboundPacketStream p(buffer, IP_MTU_SIZE);
-
-		QByteArray ba = code.toLatin1();
-		const char *msg = ba.data();
-
-		emit print(tr("ScServer::evaluate(%1, %2)").arg(QString(msg), QString::number(id)));
-		p.Clear();
-		//p << BeginMessage("/test1")	<< true << 23 << (float)3.1415 << "hello" << EndMessage;
-		p << BeginMessage(msg) << id << EndMessage;
-		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
-	}
-
+	
 	void ScServer::switchServer() {
 
 		switch (mState) {
@@ -86,7 +72,6 @@ namespace SC {
 			emit print(tr("Start scserver!"));
 			udpSocket->connectToHost(QHostAddress::LocalHost, udpSocketPort);
 			clockStatus->start(1000);
-			//this->d_load("")
 		}
 	}
 
@@ -233,11 +218,11 @@ namespace SC {
 		p << BeginMessage("/d_load") << msg << EndMessage;
 		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
 	}
-	void ScServer::s_new(int id) {
+	void ScServer::s_new(QString sDefName, int id) {
 		char buffer[IP_MTU_SIZE];
 		OutboundPacketStream p(buffer, IP_MTU_SIZE);
 		p.Clear();
-		p << BeginMessage("/s_new") << "default" << id << EndMessage;
+		p << BeginMessage("/s_new") << sDefName.toLatin1().data() << id << EndMessage;
 		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
 	};
 	void ScServer::n_free(int id) {
