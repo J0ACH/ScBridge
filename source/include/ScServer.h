@@ -29,11 +29,14 @@ namespace SC {
 		public slots:
 		void switchServer();
 		void startServer();
-		void stopServer();
-		void evaluate(QString);
-		void evaluate(QString, int);
+		void stopServer();		
 
-		void evaluateStatus();
+		void quit();
+		void status();
+		void version();
+		void d_load(QString);
+		void s_new(int);
+		void n_free(int);
 
 	signals:
 		void print(QString);
@@ -55,6 +58,9 @@ namespace SC {
 		void onProcessStateChanged(QProcess::ProcessState state);
 		void processMsgRecived();
 		void serverMsgRecived();
+
+		void evaluate(QString);
+		void evaluate(QString, int);
 	};
 
 }

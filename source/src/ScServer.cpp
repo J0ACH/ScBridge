@@ -1,6 +1,8 @@
 
 #include "ScServer.h"
 
+#define IP_MTU_SIZE 1536
+
 namespace SC {
 
 	ScServer::ScServer(QObject *parent) : QProcess(parent) {
@@ -16,7 +18,7 @@ namespace SC {
 		);
 		connect(this, SIGNAL(readyRead()), this, SLOT(processMsgRecived()));
 		connect(udpSocket, SIGNAL(readyRead()), this, SLOT(serverMsgRecived()));
-		connect(clockStatus, SIGNAL(timeout()), this, SLOT(evaluateStatus()));
+		connect(clockStatus, SIGNAL(timeout()), this, SLOT(status()));
 	}
 
 	void ScServer::setPath(QString path) {
@@ -28,21 +30,23 @@ namespace SC {
 	void ScServer::setPort(int port) { udpSocketPort = port; }
 
 	void ScServer::evaluate(QString code) {
-		const int IP_MTU_SIZE = 1536;
+
 		char buffer[IP_MTU_SIZE];
 		OutboundPacketStream p(buffer, IP_MTU_SIZE);
 
 		QByteArray ba = code.toLatin1();
 		const char *msg = ba.data();
 
-		emit print(tr("ScServer::evaluate(%1)").arg(QString(msg)));
+		if (code != "/status") {
+			emit print(tr("ScServer::evaluate(%1)").arg(QString(msg)));
+		}
+
 		p.Clear();
-		//p << BeginMessage("/test1")	<< true << 23 << (float)3.1415 << "hello" << EndMessage;
 		p << BeginMessage(msg) << EndMessage;
 		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
 	}
 	void ScServer::evaluate(QString code, int id) {
-		const int IP_MTU_SIZE = 1536;
+
 		char buffer[IP_MTU_SIZE];
 		OutboundPacketStream p(buffer, IP_MTU_SIZE);
 
@@ -82,12 +86,13 @@ namespace SC {
 			emit print(tr("Start scserver!"));
 			udpSocket->connectToHost(QHostAddress::LocalHost, udpSocketPort);
 			clockStatus->start(1000);
+			//this->d_load("")
 		}
 	}
 
 	void ScServer::stopServer() {
 		clockStatus->stop();
-		evaluate("/quit");
+		this->quit();
 		//udpSocket->disconnectFromHost();
 	}
 
@@ -122,26 +127,6 @@ namespace SC {
 
 	void ScServer::serverMsgRecived()
 	{
-		/*
-		QByteArray msg;
-		int msgSize;
-
-		while (udpSocket->hasPendingDatagrams())
-		{
-			size_t datagramSize = udpSocket->pendingDatagramSize();
-			QByteArray array(datagramSize, 0);
-			qint64 readSize = udpSocket->readDatagram(array.data(), datagramSize);
-			if (readSize == -1) { continue; }
-			msg = array;
-			msgSize = datagramSize;
-		}
-
-		for (int i = 0; i < msgSize; i++) {
-			QString ch = msg.at(i);
-			emit print(tr("msg[%1]: %2").arg(QString::number(i), ch));
-		}
-		*/
-
 		while (udpSocket->hasPendingDatagrams())
 		{
 			size_t datagramSize = udpSocket->pendingDatagramSize();
@@ -169,11 +154,15 @@ namespace SC {
 		int argCnt = message.ArgumentCount();
 		QString argTypes = QString(message.TypeTags());
 
-		emit print(tr("ScServer::parseOscMsg pattern: %1 argCnt:%2, argTypes:%3").arg(
-			pattern,
-			QString::number(argCnt),
-			argTypes
-		));
+		ReceivedMessageArgumentStream args = message.ArgumentStream();
+
+		if (pattern != "/status.reply") {
+			emit print(tr("ScServer::parseOscMsg pattern: %1 argCnt:%2, argTypes:%3").arg(
+				pattern,
+				QString::number(argCnt),
+				argTypes
+			));
+		}
 
 		if (pattern == "/status.reply") {
 			int unused;
@@ -184,7 +173,7 @@ namespace SC {
 			float avgCPU;
 			float peakCPU;
 
-			auto args = message.ArgumentStream();
+			//auto args = message.ArgumentStream();
 
 			args >> unused
 				>> ugenCount
@@ -196,6 +185,31 @@ namespace SC {
 
 			emit statusReplay(ugenCount, synthCount, groupCount, defCount, avgCPU, peakCPU);
 		}
+		else if (pattern == "/version.reply") {
+
+			const char* programName;
+			int versionMajor;
+			int versionMinor;
+			const char* versionPatch;
+			const char* gitBranchName;
+			const char* commitHash;
+
+			args >> programName
+				>> versionMajor
+				>> versionMinor
+				>> versionPatch
+				>> gitBranchName
+				>> commitHash;
+
+			emit print(tr("ScServer::parseOscMsg /version.replay program:%1, version:%2.%3%4, branch:%5, commit:%6").arg(
+				programName,
+				QString::number(versionMajor),
+				QString::number(versionMinor),
+				versionPatch,
+				gitBranchName,
+				commitHash
+			));
+		}
 		else {
 
 		}
@@ -205,8 +219,34 @@ namespace SC {
 		emit print(tr("ScServer::parseOscBundle").arg(""));
 	}
 
-	void ScServer::evaluateStatus() { evaluate("/status"); }
+	////////////////////////////////////////
 
+	void ScServer::quit() { evaluate("/quit"); }
+	void ScServer::status() { evaluate("/status"); }
+	void ScServer::version() { evaluate("/version"); }
+	void ScServer::d_load(QString path) {
+		QByteArray ba = path.toLatin1();
+		const char *msg = ba.data();
+		char buffer[IP_MTU_SIZE];
+		OutboundPacketStream p(buffer, IP_MTU_SIZE);
+		p.Clear();
+		p << BeginMessage("/d_load") << msg << EndMessage;
+		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
+	}
+	void ScServer::s_new(int id) {
+		char buffer[IP_MTU_SIZE];
+		OutboundPacketStream p(buffer, IP_MTU_SIZE);
+		p.Clear();
+		p << BeginMessage("/s_new") << "default" << id << EndMessage;
+		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
+	};
+	void ScServer::n_free(int id) {
+		char buffer[IP_MTU_SIZE];
+		OutboundPacketStream p(buffer, IP_MTU_SIZE);
+		p.Clear();
+		p << BeginMessage("/n_free") << id << EndMessage;
+		udpSocket->writeDatagram(p.Data(), p.Size(), QHostAddress::LocalHost, udpSocketPort);
+	};
 }
 
 

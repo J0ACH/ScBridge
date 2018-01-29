@@ -31,21 +31,27 @@ public:
 	void portChanged();
 	void serverStatusChanged(ScServer::ServerState);
 	void statusReplay(int, int, int, int, float, float);
+	void synthNew();
+	void nodeFree();
 
 signals:
 	void codeEvaluate(QString);
+	void s_new(int);
+	void n_free(int);
 
 protected:
 	void resizeEvent(QResizeEvent *event) override;
 
 private:
 	ScServer *server;
-	QGroupBox *groupSC, *groupConsole, *groupCmd;
+	QGroupBox *groupSC, *groupConsole, *groupCmd, *groupSynth;
 	QCheckBox *serverRun;
 	QTextEdit *console;
 	QLineEdit *cmdLine;
-	QSpinBox *boxPort;
+	QSpinBox *boxPort, *boxSynth;
 	QLabel *statusState, *statusInfo;
+	QPushButton *startSynth, *killSynth;
+	
 };
 
 // Interpretr //////////////////////////////////////////////
