@@ -22,14 +22,14 @@ namespace SC {
 		ScServer(QObject *parent);
 
 		enum ServerState { OFF, BOOTING, ON, SHUTTING };
-
+		
 		void setPath(QString);
 		void setPort(int);
 
 		public slots:
 		void switchServer();
 		void startServer();
-		void stopServer();		
+		void stopServer();
 
 		void quit();
 		void status();
@@ -55,13 +55,21 @@ namespace SC {
 		void parseOscBundle(ReceivedBundle);
 		void printOscMsg();
 
+		// create osc message //////////////////////////////////////
+		
+		void sendOsc(QString pattern);
+				
 		private slots:
-		void onProcessStateChanged(QProcess::ProcessState state);
+		void processStateChanged(QProcess::ProcessState state);
 		void processMsgRecived();
 		void serverMsgRecived();
 
 		void evaluate(QString);
+
+
+
 		
+
 	};
 
 }
