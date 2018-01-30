@@ -28,9 +28,49 @@ namespace SC {
 	}
 	void ScServer::setPort(int port) { udpSocketPort = port; }
 
-	void ScServer::evaluate(QString pattern) {
-		emit print(tr("ScServer::evaluate: %1").arg(pattern));
-		sendOsc(pattern);
+	void ScServer::evaluate(QString pattern, QString arg1, QString arg2, QString arg3) {
+		PacketWriter pw;
+		Message msg;
+		msg.init(pattern.toStdString());
+
+		//emit print(tr("ScServer::evaluate: [%1, %2, %3, %4]").arg(pattern, arg1, arg2, arg3));
+
+		emit print(tr("ScServer::evaluate: pattern:%1").arg(pattern));
+
+		if (!arg1.isEmpty()) {
+			if (arg1.toInt()) { msg.pushInt32(arg1.toInt()); }
+			else if (arg1.toFloat()) { msg.pushFloat(arg1.toFloat()); }
+			else { msg.pushStr(arg2.toStdString()); }
+			emit print(tr("ScServer::evaluate: arg1:%1").arg(arg1));
+		}
+		if (!arg2.isEmpty()) {
+			if (arg2.toInt()) { msg.pushInt32(arg2.toInt()); }
+			else if (arg2.toFloat()) { msg.pushFloat(arg2.toFloat()); }
+			else { msg.pushStr(arg2.toStdString()); }
+			emit print(tr("ScServer::evaluate: arg2:%1").arg(arg2));
+		}
+		if (!arg3.isEmpty()) {
+			if (arg3.toInt()) {
+				msg.pushInt32(arg3.toInt()); 
+				emit print(tr("ScServer::evaluate: int arg3:%1").arg(arg3));
+			}
+			else if (arg3.toFloat()) {
+				msg.pushFloat(arg3.toFloat()); 
+				emit print(tr("ScServer::evaluate: float arg3:%1").arg(arg3));
+			}
+			else { 
+				msg.pushStr(arg3.toStdString()); 
+				emit print(tr("ScServer::evaluate: string arg3:%1").arg(arg3));
+			}
+			
+		}
+
+		//emit print(tr("ScServer::evaluate: [%1, %2, %3, %4]").arg(pattern, arg1, arg2, arg3));
+
+		if (msg.isOk()) {
+			pw.init().addMessage(msg);
+			udpSocket->writeDatagram(pw.packetData(), pw.packetSize(), QHostAddress::LocalHost, udpSocketPort);
+		}
 	}
 
 	void ScServer::switchServer() {
@@ -67,6 +107,19 @@ namespace SC {
 		this->quit();
 		//udpSocket->disconnectFromHost();
 	}
+
+	////////////////////////////////////////
+
+	void ScServer::notify(int receive, int id) { sendOsc(CmdType::cmd_notify, receive, id); }
+	void ScServer::quit() { sendOsc(CmdType::cmd_quit); }
+	void ScServer::status() { sendOsc(CmdType::cmd_status); }
+	void ScServer::version() { sendOsc(CmdType::cmd_version); }
+
+	void ScServer::d_load(QString path) { sendOsc(CmdType::cmd_d_load, path); }
+	void ScServer::s_new(QString sDefName, int id) { sendOsc(CmdType::cmd_s_new, sDefName, id); }
+	void ScServer::n_free(int id) { sendOsc(CmdType::cmd_n_free, id); }
+
+	// recive osc message //////////////////////////////////////
 
 	void ScServer::processStateChanged(QProcess::ProcessState state)
 	{
@@ -190,46 +243,46 @@ namespace SC {
 		}
 	}
 
-	////////////////////////////////////////
+	// send osc message //////////////////////////////////////
 
-	void ScServer::quit() { sendOsc("/quit"); }
-	void ScServer::status() { sendOsc("/status"); }
-	void ScServer::version() { sendOsc("/version"); }
+	void ScServer::sendOsc(CmdType pattern, QVariant arg1, QVariant arg2) {
 
-	void ScServer::d_load(QString path) {
-		QByteArray ba = path.toLatin1();
-		const char *msg = ba.data();
-		//packetStream.Clear();
-		//packetStream << BeginMessage("/d_load") << msg << EndMessage;
-		//udpSocket->writeDatagram(packetStream.Data(), packetStream.Size(), QHostAddress::LocalHost, udpSocketPort);
-	}
-	void ScServer::s_new(QString sDefName, int id) { sendOsc("/s_new", sDefName, id); }
-	void ScServer::n_free(int id) { sendOsc("/n_free", id); }
-
-	// create osc message //////////////////////////////////////
-
-	void ScServer::sendOsc(QString pattern) {
-	//	emit print(tr("ScServer::sendOsc: %1").arg(pattern));
 		PacketWriter pw;
 		Message msg;
-		//msg.init(QStringLiteral("\"%1\"").arg(pattern).toStdString());
-		msg.init(pattern.toStdString());
-		pw.init().addMessage(msg);
-		udpSocket->writeDatagram(pw.packetData(), pw.packetSize(), QHostAddress::LocalHost, udpSocketPort);
-	}
-	void ScServer::sendOsc(QString pattern, int num) {
-		PacketWriter pw;
-		Message msg;
-		msg.init(pattern.toStdString()).pushInt32(num);
-		pw.init().addMessage(msg);
-		udpSocket->writeDatagram(pw.packetData(), pw.packetSize(), QHostAddress::LocalHost, udpSocketPort);
-	}
-	void ScServer::sendOsc(QString pattern, QString txt, int num) {
-		PacketWriter pw;
-		Message msg;
-		msg.init(pattern.toStdString()).pushStr(txt.toStdString()).pushInt32(num);
-		pw.init().addMessage(msg);
-		udpSocket->writeDatagram(pw.packetData(), pw.packetSize(), QHostAddress::LocalHost, udpSocketPort);
+
+		switch (pattern)
+		{
+		case CmdType::cmd_notify:
+			msg.init("/notify");
+			if (arg1.isValid()) { msg.pushInt32(arg1.toInt()); }
+			break;
+		case CmdType::cmd_status:
+			msg.init("/status");
+			break;
+		case CmdType::cmd_quit:
+			msg.init("/quit");
+			break;
+		case CmdType::cmd_s_new:
+			msg.init("/s_new").pushStr(arg1.toString().toStdString()).pushInt32(arg2.toInt());
+			break;
+		case CmdType::cmd_n_free:
+			msg.init("/n_free").pushInt32(arg1.toInt());
+			break;
+		case CmdType::cmd_n_set:
+			msg.init("/n_set").pushInt32(arg1.toInt());
+			break;
+		case CmdType::cmd_version:
+			msg.init("/version");
+			break;
+		default:
+			emit print("ScServer::sendOsc NOT matched pattern");
+			break;
+		}
+
+		if (msg.isOk()) {
+			pw.init().addMessage(msg);
+			udpSocket->writeDatagram(pw.packetData(), pw.packetSize(), QHostAddress::LocalHost, udpSocketPort);
+		}
 	}
 
 }

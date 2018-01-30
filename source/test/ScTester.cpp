@@ -42,7 +42,11 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 	console->setReadOnly(true);
 
 	groupCmd = new QGroupBox("Cmd", this);
-	cmdLine = new QLineEdit(groupCmd);
+	cmdLine1 = new QLineEdit(groupCmd);
+	cmdLine2 = new QLineEdit(groupCmd);
+	cmdLine3 = new QLineEdit(groupCmd);
+	cmdLine4 = new QLineEdit(groupCmd);
+	evaluateCmd = new QPushButton("evaluate", groupCmd);
 
 	groupSynth = new QGroupBox("Synths", this);
 	boxSynth = new QSpinBox(groupSynth);
@@ -51,11 +55,10 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 	startSynth = new QPushButton("new", groupSynth);
 	killSynth = new QPushButton("kill", groupSynth);
 
-
 	QObject::connect(serverRun, SIGNAL(released()), server, SLOT(switchServer()));
 	QObject::connect(this, SIGNAL(codeEvaluate(QString)), server, SLOT(evaluate(QString)));
 	QObject::connect(boxPort, SIGNAL(valueChanged(int)), this, SLOT(portChanged()));
-	QObject::connect(cmdLine, SIGNAL(returnPressed()), this, SLOT(cmdLineEvaluated()));
+	QObject::connect(evaluateCmd, SIGNAL(pressed()), this, SLOT(cmdLineEvaluated()));
 
 	QObject::connect(server, SIGNAL(print(QString)), console, SLOT(append(QString)));
 	QObject::connect(
@@ -93,7 +96,7 @@ void PageServer::statusReplay(int ugenCount, int synthCount, int groupCount, int
 void PageServer::synthNew() {
 	//qDebug() << "PageServer::portChanged" << boxPort;
 	console->append(tr("PageServer::synthNew %1").arg(QString::number(boxSynth->value())));
-	server->s_new("default", boxSynth->value());	
+	server->s_new("default", boxSynth->value());
 }
 void PageServer::nodeFree() {
 	//qDebug() << "PageServer::portChanged" << boxPort;
@@ -103,7 +106,8 @@ void PageServer::nodeFree() {
 
 void PageServer::cmdLineEvaluated() {
 	//qDebug() << "PageServer::cmdLine EVALUATED";
-	emit codeEvaluate(cmdLine->text());
+	//emit codeEvaluate(cmdLine->text());
+	server->evaluate(cmdLine1->text(), cmdLine2->text(), cmdLine3->text(), cmdLine4->text());
 }
 
 void PageServer::serverStatusChanged(ScServer::ServerState state) {
@@ -138,12 +142,16 @@ void PageServer::resizeEvent(QResizeEvent *event) {
 	console->setGeometry(10, 20, groupConsole->width() - 20, groupConsole->height() - 30);
 
 	groupCmd->setGeometry(10, 410, size.width() - 20, 60);
-	cmdLine->setGeometry(10, 20, groupCmd->width() - 20, groupCmd->height() - 30);
+	cmdLine1->setGeometry(10, 20, 100, groupCmd->height() - 30);
+	cmdLine2->setGeometry(120, 20, 100, groupCmd->height() - 30);
+	cmdLine3->setGeometry(230, 20, 100, groupCmd->height() - 30);
+	cmdLine4->setGeometry(340, 20, 100, groupCmd->height() - 30);
+	evaluateCmd->setGeometry(450, 20, 100, groupCmd->height() - 30);
 
 	groupSynth->setGeometry(10, 470, size.width() - 20, 200);
-	boxSynth->setGeometry(10, 10, 60, 20);
-	startSynth->setGeometry(80, 10, 40, 20);
-	killSynth->setGeometry(125, 10, 40, 20);
+	boxSynth->setGeometry(10, 20, 60, 20);
+	startSynth->setGeometry(80, 20, 40, 20);
+	killSynth->setGeometry(125, 20, 40, 20);
 }
 
 // Interpretr //////////////////////////////////////////////

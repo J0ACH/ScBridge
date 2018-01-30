@@ -29,7 +29,9 @@ namespace SC {
 		void switchServer();
 		void startServer();
 		void stopServer();
+		void evaluate(QString parrent, QString arg1 = "", QString arg2 = "", QString arg3 = "");
 
+		void notify(int, int);
 		void quit();
 		void status();
 		void version();
@@ -53,18 +55,31 @@ namespace SC {
 
 		void oscMsgParser(Message*);
 
-		// create osc message //////////////////////////////////////
+		// send osc message //////////////////////////////////////
 
-		void sendOsc(QString);
-		void sendOsc(QString, int);
-		void sendOsc(QString, QString, int);
+		enum CmdType {
+			cmd_none,
+			cmd_notify,
+			cmd_status,
+			cmd_quit,
+
+			cmd_d_load,
+
+			cmd_s_new,
+
+			cmd_n_free,
+			cmd_n_set,
+
+			cmd_version
+		};
+		void sendOsc(CmdType, QVariant arg1 = QVariant(), QVariant arg2 = QVariant());
 
 		private slots:
 		void processStateChanged(QProcess::ProcessState state);
 		void processMsgRecived();
 		void oscMsgRecived();
 
-		void evaluate(QString);
+
 
 
 

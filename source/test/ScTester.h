@@ -33,12 +33,7 @@ public:
 	void statusReplay(int, int, int, int, float, float);
 	void synthNew();
 	void nodeFree();
-
-signals:
-	void codeEvaluate(QString);
-	void s_new(int);
-	void n_free(int);
-
+	
 protected:
 	void resizeEvent(QResizeEvent *event) override;
 
@@ -47,10 +42,10 @@ private:
 	QGroupBox *groupSC, *groupConsole, *groupCmd, *groupSynth;
 	QCheckBox *serverRun;
 	QTextEdit *console;
-	QLineEdit *cmdLine;
+	QLineEdit *cmdLine1, *cmdLine2, *cmdLine3, *cmdLine4;
 	QSpinBox *boxPort, *boxSynth;
 	QLabel *statusState, *statusInfo;
-	QPushButton *startSynth, *killSynth;
+	QPushButton *evaluateCmd, *startSynth, *killSynth;
 	
 };
 
