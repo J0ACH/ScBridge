@@ -69,8 +69,6 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 
 	QObject::connect(startSynth, SIGNAL(pressed()), this, SLOT(synthNew()));
 	QObject::connect(killSynth, SIGNAL(pressed()), this, SLOT(nodeFree()));
-	QObject::connect(this, SIGNAL(s_new(int)), server, SLOT(s_new(int)));
-	QObject::connect(this, SIGNAL(n_free(int)), server, SLOT(n_free(int)));
 }
 
 void PageServer::portChanged() {

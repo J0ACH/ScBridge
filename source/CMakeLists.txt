@@ -6,7 +6,6 @@ find_package(Qt5 COMPONENTS Core Widgets Gui Network REQUIRED)
 add_subdirectory (include)
 add_subdirectory (src)
 add_subdirectory (test)
-add_subdirectory (externalLibs/oscpack)
 
 # ////////////////////////////
 
@@ -18,7 +17,6 @@ add_library(ScBridge SHARED
 target_include_directories(ScBridge 
 	PRIVATE 
 		${CMAKE_CURRENT_LIST_DIR}/include
-		${CMAKE_CURRENT_LIST_DIR}/externalLibs/oscpack
 	PUBLIC
 		${_qtIncludeDirs}
 )
@@ -28,7 +26,6 @@ target_link_libraries(ScBridge
 		Qt5::Gui
 		Qt5::Network
 		Qt5::Widgets
-		oscpack
 )
 
 add_custom_command(TARGET ScBridge
@@ -47,7 +44,6 @@ target_include_directories(ScTester
 	PRIVATE 
 		${CMAKE_CURRENT_LIST_DIR}/test
 		${CMAKE_CURRENT_LIST_DIR}/include
-		${CMAKE_CURRENT_LIST_DIR}/externalLibs/oscpack
 	PUBLIC
 		${_qtIncludeDirs}
 )
@@ -56,7 +52,6 @@ target_link_libraries(ScTester
 		ScBridge
 		Qt5::Core
 		Qt5::Widgets
-		oscpack
 )
 
 string(TOUPPER ${CMAKE_CONFIGURATION_TYPES} configType)

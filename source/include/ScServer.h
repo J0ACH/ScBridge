@@ -8,10 +8,6 @@
 #include <QHostAddress>
 #include <QTimer>
 
-#include <osc/OscReceivedElements.h>
-#include <osc/OscOutboundPacketStream.h>
-using namespace osc;
-
 #include <oscpkt.h>
 using namespace oscpkt;
 
@@ -25,7 +21,7 @@ namespace SC {
 		ScServer(QObject *parent);
 
 		enum ServerState { OFF, BOOTING, ON, SHUTTING };
-		
+
 		void setPath(QString);
 		void setPort(int);
 
@@ -52,27 +48,27 @@ namespace SC {
 		int udpSocketPort;
 		ServerState mState;
 
+		Message *oscmsg;
 		QTimer *clockStatus;
 
-		void parseOscMsg2(Message*);
-		void parseOscMsg(ReceivedMessage);
-		void parseOscBundle(ReceivedBundle);
-		void printOscMsg();
+		void oscMsgParser(Message*);
 
 		// create osc message //////////////////////////////////////
-		
-		void sendOsc(QString pattern);
-				
+
+		void sendOsc(QString);
+		void sendOsc(QString, int);
+		void sendOsc(QString, QString, int);
+
 		private slots:
 		void processStateChanged(QProcess::ProcessState state);
 		void processMsgRecived();
-		void serverMsgRecived();
+		void oscMsgRecived();
 
 		void evaluate(QString);
 
 
 
-		
+
 
 	};
 
