@@ -11,7 +11,7 @@ namespace SC {
 		udpSocket = new QUdpSocket(this);
 		udpSocketPort = 8050;
 		mState = ServerState::OFF;
-		
+
 		clockStatus = new QTimer(this);
 
 		connect(
@@ -113,6 +113,7 @@ namespace SC {
 	}
 	void ScServer::serverMsgRecived()
 	{
+		/*
 		while (udpSocket->hasPendingDatagrams())
 		{
 			size_t datagramSize = udpSocket->pendingDatagramSize();
@@ -133,6 +134,92 @@ namespace SC {
 				}
 			}
 		}
+		*/
+
+		PacketReader pr;
+		while (udpSocket->hasPendingDatagrams())
+		{
+			size_t datagramSize = udpSocket->pendingDatagramSize();
+			QByteArray array(datagramSize, 0);
+			qint64 readSize = udpSocket->readDatagram(array.data(), datagramSize);
+			if (readSize == -1)
+				continue;
+
+			pr.init(array.data(), datagramSize);
+
+			Message *msg;
+			while (pr.isOk() && (msg = pr.popMessage()) != 0) {
+				parseOscMsg2(msg);
+
+
+
+			}
+		}
+
+
+
+		/*
+		//if (sock.receiveNextPacket(30))  // timeout, in ms
+		{
+			pr.init(sock.packetData(), sock.packetSize());
+			oscpkt::Message *msg;
+			while (pr.isOk() && (msg = pr.popMessage()) != 0) {
+				int iarg;
+				if (msg->match("/ping").popInt32(iarg).isOkNoMoreArgs()) {
+					cout << "Server: received /ping " << iarg << " from " << sock.packetOrigin() << "\n";
+				}
+			}
+		//}
+		*/
+
+	}
+
+	void ScServer::parseOscMsg2(Message *message) {
+		QString pattern = QString::fromStdString(message->addressPattern());
+		QString argTypes = QString::fromStdString(message->typeTags());
+		int argCnt = argTypes.size();
+
+		//print(tr("ScServer::serverMsgRecived OSCPKT pattern: %1").arg(pattern));
+		//print(tr("ScServer::serverMsgRecived OSCPKT argTypes: %1").arg(argTypes));
+
+		emit print("ScServer::parseOscMsg");
+		emit print(tr("- pattern: %1 argCnt:%2, argTypes:%3").arg(
+			pattern,
+			QString::number(argCnt),
+			argTypes
+		));
+
+		Message::ArgReader argsPrint = message->arg();
+
+		float fnum;
+
+		for (int i = 0; i < argCnt; i++) {
+			if (argsPrint.isBool()) {
+				bool boolean;
+				argsPrint.popBool(boolean);
+				emit print(tr("\t %1) - bool: %2").arg(QString::number(i), boolean ? "true" : "false"));
+			}
+			else if (argsPrint.isInt32()) {
+				int num;
+				argsPrint.popInt32(num);
+				emit print(tr("\t %1) - int: %2").arg(QString::number(i), QString::number(num)));
+			}
+			else if (argsPrint.isFloat()) {
+				float num;
+				argsPrint.popFloat(num);
+				emit print(tr("\t %1) - float: %2").arg(QString::number(i), QString::number(num)));
+			}
+			else if (argsPrint.isStr()) {
+				std::string txt;
+				argsPrint.popStr(txt);
+				emit print(tr("\t %1) - string: %2").arg(QString::number(i), QString::fromStdString(txt)));
+			}
+		}
+		/*
+		if (msg->match("/done").isOkNoMoreArgs()) {
+			print("ScServer::serverMsgRecived OSCPKT QUIT");
+		}
+		*/
 	}
 
 	void ScServer::parseOscMsg(ReceivedMessage message) {

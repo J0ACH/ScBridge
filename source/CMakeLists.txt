@@ -6,7 +6,6 @@ find_package(Qt5 COMPONENTS Core Widgets Gui Network REQUIRED)
 add_subdirectory (include)
 add_subdirectory (src)
 add_subdirectory (test)
-#add_subdirectory (externalLibs/oscpkt)
 add_subdirectory (externalLibs/oscpack)
 
 # ////////////////////////////
@@ -14,13 +13,11 @@ add_subdirectory (externalLibs/oscpack)
 add_library(ScBridge SHARED
 	${ScBridge_hdr}
 	${ScBridge_src}
-		#${OscPkt_hdr}
 )
 
 target_include_directories(ScBridge 
 	PRIVATE 
 		${CMAKE_CURRENT_LIST_DIR}/include
-		#${CMAKE_CURRENT_LIST_DIR}/externalLibs/oscpkt
 		${CMAKE_CURRENT_LIST_DIR}/externalLibs/oscpack
 	PUBLIC
 		${_qtIncludeDirs}
@@ -50,7 +47,6 @@ target_include_directories(ScTester
 	PRIVATE 
 		${CMAKE_CURRENT_LIST_DIR}/test
 		${CMAKE_CURRENT_LIST_DIR}/include
-		#${CMAKE_CURRENT_LIST_DIR}/externalLibs/oscpkt
 		${CMAKE_CURRENT_LIST_DIR}/externalLibs/oscpack
 	PUBLIC
 		${_qtIncludeDirs}

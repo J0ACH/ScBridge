@@ -12,6 +12,9 @@
 #include <osc/OscOutboundPacketStream.h>
 using namespace osc;
 
+#include <oscpkt.h>
+using namespace oscpkt;
+
 namespace SC {
 
 	class ScServer : public QProcess
@@ -51,6 +54,7 @@ namespace SC {
 
 		QTimer *clockStatus;
 
+		void parseOscMsg2(Message*);
 		void parseOscMsg(ReceivedMessage);
 		void parseOscBundle(ReceivedBundle);
 		void printOscMsg();
