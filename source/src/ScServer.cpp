@@ -33,8 +33,6 @@ namespace SC {
 		Message msg;
 		msg.init(pattern.toStdString());
 
-		//emit print(tr("ScServer::evaluate: [%1, %2, %3, %4]").arg(pattern, arg1, arg2, arg3));
-
 		emit print(tr("ScServer::evaluate: pattern:%1").arg(pattern));
 
 		if (!arg1.isEmpty()) {
@@ -51,21 +49,18 @@ namespace SC {
 		}
 		if (!arg3.isEmpty()) {
 			if (arg3.toInt()) {
-				msg.pushInt32(arg3.toInt()); 
+				msg.pushInt32(arg3.toInt());
 				emit print(tr("ScServer::evaluate: int arg3:%1").arg(arg3));
 			}
 			else if (arg3.toFloat()) {
-				msg.pushFloat(arg3.toFloat()); 
+				msg.pushFloat(arg3.toFloat());
 				emit print(tr("ScServer::evaluate: float arg3:%1").arg(arg3));
 			}
-			else { 
-				msg.pushStr(arg3.toStdString()); 
+			else {
+				msg.pushStr(arg3.toStdString());
 				emit print(tr("ScServer::evaluate: string arg3:%1").arg(arg3));
 			}
-			
 		}
-
-		//emit print(tr("ScServer::evaluate: [%1, %2, %3, %4]").arg(pattern, arg1, arg2, arg3));
 
 		if (msg.isOk()) {
 			pw.init().addMessage(msg);
@@ -168,6 +163,8 @@ namespace SC {
 		QString pattern = QString::fromStdString(message->addressPattern());
 		QString argTypes = QString::fromStdString(message->typeTags());
 		int argCnt = argTypes.size();
+		size_t time = message->timeTag();
+		emit print(tr("ScServer::parseOscMsg timestamp:%1").arg(time));
 
 		Message::ArgReader args = message->arg();
 
@@ -249,6 +246,13 @@ namespace SC {
 
 		PacketWriter pw;
 		Message msg;
+		
+		QDateTime start = QDateTime(QDate(1900,1,1), QTime(0,0,0,0));
+		QDateTime epoch = QDateTime::currentDateTime();
+		
+		epoch.addSecs(10);
+		qint64 timeint = epoch.currentSecsSinceEpoch();
+		TimeTag t = TimeTag(timeint);
 
 		switch (pattern)
 		{
@@ -263,7 +267,8 @@ namespace SC {
 			msg.init("/quit");
 			break;
 		case CmdType::cmd_s_new:
-			msg.init("/s_new").pushStr(arg1.toString().toStdString()).pushInt32(arg2.toInt());
+			t = TimeTag(50000);
+			msg.init("/s_new", t).pushStr(arg1.toString().toStdString()).pushInt32(arg2.toInt());
 			break;
 		case CmdType::cmd_n_free:
 			msg.init("/n_free").pushInt32(arg1.toInt());
@@ -280,7 +285,10 @@ namespace SC {
 		}
 
 		if (msg.isOk()) {
-			pw.init().addMessage(msg);
+			pw.init();
+			pw.startBundle();
+			pw.addMessage(msg);
+			pw.endBundle();
 			udpSocket->writeDatagram(pw.packetData(), pw.packetSize(), QHostAddress::LocalHost, udpSocketPort);
 		}
 	}

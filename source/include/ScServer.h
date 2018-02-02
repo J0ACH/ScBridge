@@ -6,6 +6,7 @@
 #include <QUdpSocket>
 #include <QNetworkDatagram>
 #include <QHostAddress>
+#include <QDateTime>
 #include <QTimer>
 
 #include <oscpkt.h>
