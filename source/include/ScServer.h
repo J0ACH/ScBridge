@@ -14,6 +14,10 @@ using namespace oscpkt;
 
 namespace SC {
 
+#define SEC_PER_YEAR 31536000
+#define SEC_TO_EPOCH 2207520000
+
+
 	class ScServer : public QProcess
 	{
 		Q_OBJECT

@@ -246,13 +246,18 @@ namespace SC {
 
 		PacketWriter pw;
 		Message msg;
+
+		QDateTime start = QDateTime(QDate(1900, 1, 1), QTime(0, 0, 0, 0));
 		
-		QDateTime start = QDateTime(QDate(1900,1,1), QTime(0,0,0,0));
-		QDateTime epoch = QDateTime::currentDateTime();
-		
+		qint64 epoch = QDateTime::currentSecsSinceEpoch();
+		qint64 ntptime = epoch + SEC_TO_EPOCH;
+		emit print(tr("ScServer::sendOsc epoch: %1").arg(QString::number(ntptime)));
+
+		/*
 		epoch.addSecs(10);
 		qint64 timeint = epoch.currentSecsSinceEpoch();
-		TimeTag t = TimeTag(timeint);
+		*/
+		TimeTag t = TimeTag(1);
 
 		switch (pattern)
 		{
@@ -267,7 +272,7 @@ namespace SC {
 			msg.init("/quit");
 			break;
 		case CmdType::cmd_s_new:
-			t = TimeTag(50000);
+			t = TimeTag(ntptime+5);
 			msg.init("/s_new", t).pushStr(arg1.toString().toStdString()).pushInt32(arg2.toInt());
 			break;
 		case CmdType::cmd_n_free:
@@ -284,6 +289,8 @@ namespace SC {
 			break;
 		}
 
+		/*
+		*/
 		if (msg.isOk()) {
 			pw.init();
 			pw.startBundle();
