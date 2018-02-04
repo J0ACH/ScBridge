@@ -16,6 +16,7 @@
 #include "ScServer.h"
 #include "ScLang.h"
 
+
 using namespace SC;
 
 // Server //////////////////////////////////////////////
@@ -33,6 +34,7 @@ public:
 	void statusReplay(int, int, int, int, float, float);
 	void synthNew();
 	void nodeFree();
+	void bundleNow();
 	
 protected:
 	void resizeEvent(QResizeEvent *event) override;
@@ -45,7 +47,7 @@ private:
 	QLineEdit *cmdLine1, *cmdLine2, *cmdLine3, *cmdLine4;
 	QSpinBox *boxPort, *boxSynth;
 	QLabel *statusState, *statusInfo;
-	QPushButton *evaluateCmd, *startSynth, *killSynth;
+	QPushButton *evaluateCmd, *startSynth, *killSynth, *bundleTime;
 	
 };
 

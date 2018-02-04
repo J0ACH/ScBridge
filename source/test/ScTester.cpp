@@ -54,6 +54,7 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 	boxSynth->setValue(1002);
 	startSynth = new QPushButton("new", groupSynth);
 	killSynth = new QPushButton("kill", groupSynth);
+	bundleTime = new QPushButton("time", groupSynth);
 
 	QObject::connect(serverRun, SIGNAL(released()), server, SLOT(switchServer()));
 	QObject::connect(this, SIGNAL(codeEvaluate(QString)), server, SLOT(evaluate(QString)));
@@ -72,6 +73,7 @@ PageServer::PageServer(QWidget *parent) : QWidget(parent) {
 
 	QObject::connect(startSynth, SIGNAL(pressed()), this, SLOT(synthNew()));
 	QObject::connect(killSynth, SIGNAL(pressed()), this, SLOT(nodeFree()));
+	QObject::connect(bundleTime, SIGNAL(pressed()), this, SLOT(bundleNow()));
 }
 
 void PageServer::portChanged() {
@@ -102,6 +104,11 @@ void PageServer::nodeFree() {
 	//qDebug() << "PageServer::portChanged" << boxPort;
 	console->append(tr("PageServer::nodeFree %1").arg(QString::number(boxSynth->value())));
 	server->n_free(boxSynth->value());
+}
+void PageServer::bundleNow() {
+	//qDebug() << "PageServer::portChanged" << boxPort;
+	console->append("PageServer::bundleNow");
+	server->bundleTime();
 }
 
 void PageServer::cmdLineEvaluated() {
@@ -149,9 +156,10 @@ void PageServer::resizeEvent(QResizeEvent *event) {
 	evaluateCmd->setGeometry(450, 20, 100, groupCmd->height() - 30);
 
 	groupSynth->setGeometry(10, 470, size.width() - 20, 200);
-	boxSynth->setGeometry(10, 20, 60, 20);
-	startSynth->setGeometry(80, 20, 40, 20);
-	killSynth->setGeometry(125, 20, 40, 20);
+	boxSynth->setGeometry(10, 20, 60, 25);
+	startSynth->setGeometry(80, 20, 40, 25);
+	killSynth->setGeometry(125, 20, 40, 25);
+	bundleTime->setGeometry(10, 50, 60, 25);
 }
 
 // Interpretr //////////////////////////////////////////////
