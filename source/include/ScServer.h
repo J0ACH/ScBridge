@@ -16,6 +16,7 @@ namespace SC {
 
 #define SEC_PER_YEAR 31536000
 #define SEC_TO_EPOCH 2207520000
+	
 
 
 	class ScServer : public QProcess
@@ -60,6 +61,10 @@ namespace SC {
 
 		void oscMsgParser(Message*);
 
+		const qint64 sec_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
+		const qint64 msec_1900_1970 = 2208988800000;// pozn.: pocet milisekund bez 17 prestupnych let 
+		qint64 sec_1970_init;
+									 
 		// send osc message //////////////////////////////////////
 
 		enum CmdType {

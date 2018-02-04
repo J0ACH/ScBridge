@@ -9,7 +9,7 @@ namespace SC {
 		udpSocketPort = 8050;
 		mState = ServerState::OFF;
 
-		clockStatus = new QTimer(this);
+			clockStatus = new QTimer(this);
 
 		connect(
 			this, SIGNAL(stateChanged(QProcess::ProcessState)),
@@ -70,9 +70,10 @@ namespace SC {
 
 	void ScServer::switchServer() {
 
+
 		switch (mState) {
 		case ServerState::OFF:
-			startServer();
+						startServer();			
 			break;
 		default:
 			stopServer();
@@ -118,12 +119,23 @@ namespace SC {
 
 	void ScServer::processStateChanged(QProcess::ProcessState state)
 	{
+		QDateTime initTime = QDateTime::currentDateTime();
+		qint64 msec_1970_init = initTime.toMSecsSinceEpoch();
+		qint64 secEpoch = msec_1970_init / 1000;
+		qint64 sec_1970_init = initTime.toSecsSinceEpoch();
+		qint64 msec_1900_init = msec_1900_1970 + initTime.toMSecsSinceEpoch();
+
 		switch (state) {
 		case QProcess::Starting:
 			mState = ServerState::BOOTING;
 			break;
 		case QProcess::Running:
-			mState = ServerState::ON;
+			mState = ServerState::ON;			
+
+			emit print(tr("ScServer::new msec_1900_1970: (%1)").arg(QString::number(msec_1900_1970)));
+			emit print(tr("ScServer::new msec_1970_init: (%1)").arg(QString::number(msec_1970_init)));
+			emit print(tr("ScServer::new msec_1900_init: (%1)").arg(QString::number(msec_1900_init)));
+
 			break;
 		case QProcess::NotRunning:
 			mState = ServerState::OFF;
@@ -164,7 +176,7 @@ namespace SC {
 		QString argTypes = QString::fromStdString(message->typeTags());
 		int argCnt = argTypes.size();
 		size_t time = message->timeTag();
-		emit print(tr("ScServer::parseOscMsg timestamp:%1").arg(time));
+		//emit print(tr("ScServer::parseOscMsg timestamp:%1").arg(time));
 
 		Message::ArgReader args = message->arg();
 
@@ -248,16 +260,23 @@ namespace SC {
 		Message msg;
 
 		QDateTime start = QDateTime(QDate(1900, 1, 1), QTime(0, 0, 0, 0));
-		
-		qint64 epoch = QDateTime::currentSecsSinceEpoch();
-		qint64 ntptime = epoch + SEC_TO_EPOCH;
-		emit print(tr("ScServer::sendOsc epoch: %1").arg(QString::number(ntptime)));
 
 		/*
+		qint64 epoch = QDateTime::currentSecsSinceEpoch();
+		qint32 secTime = epoch + SEC_TO_EPOCH;
+		qint64 ntptime = epoch + SEC_TO_EPOCH;
+
 		epoch.addSecs(10);
 		qint64 timeint = epoch.currentSecsSinceEpoch();
 		*/
-		TimeTag t = TimeTag(1);
+		//QDateTime secEpoch = QDateTime::currentSecsSinceEpoch();
+		qint64 secTime = QDateTime::currentSecsSinceEpoch() + (quint64)sec_1900_1970;// +(quint64)3;
+		
+
+		//oscpkt::uint64_t utime = SEC_TO_EPOCH + epoch + 3;
+		//emit print(tr("ScServer::sendOsc epoch: %1").arg(QString::number(secTime)));
+		TimeTag t = TimeTag(secTime);
+		//TimeTag t = TimeTag(ntptime,);
 
 		switch (pattern)
 		{
@@ -272,7 +291,6 @@ namespace SC {
 			msg.init("/quit");
 			break;
 		case CmdType::cmd_s_new:
-			t = TimeTag(ntptime+5);
 			msg.init("/s_new", t).pushStr(arg1.toString().toStdString()).pushInt32(arg2.toInt());
 			break;
 		case CmdType::cmd_n_free:
@@ -292,8 +310,11 @@ namespace SC {
 		/*
 		*/
 		if (msg.isOk()) {
+			//t = TimeTag(utime);
+			//TimeTag::TimeTag()
 			pw.init();
 			pw.startBundle();
+			//pw.startBundle(t);
 			pw.addMessage(msg);
 			pw.endBundle();
 			udpSocket->writeDatagram(pw.packetData(), pw.packetSize(), QHostAddress::LocalHost, udpSocketPort);
