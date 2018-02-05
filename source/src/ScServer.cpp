@@ -256,13 +256,14 @@ namespace SC {
 		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
 		seconds secs = duration_cast<seconds>(sinceEpoch);
 		nanoseconds nsecs = sinceEpoch - secs;
-
+		
 		qint64 answer = ((qint64)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32)
 			+ (qint64)(nsecs.count() * kNanosToOSCunits);
 		
 		qint64 sec_1900_init = ((qint64)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32);
 
-		emit print(tr("ScServer::answer: (%1)").arg(QString::number(sec_1900_init)));
+		emit print(tr("ScServer::answer        : (%1)").arg(QString::number(answer)));
+		emit print(tr("ScServer::sec_1900_init : (%1)").arg(QString::number(sec_1900_init)));
 	}
 
 	void ScServer::sendOsc(CmdType pattern, QVariant arg1, QVariant arg2) {
