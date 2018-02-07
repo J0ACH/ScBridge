@@ -106,8 +106,7 @@ void PageServer::nodeFree() {
 	server->n_free(boxSynth->value());
 }
 void PageServer::bundleNow() {
-	//qDebug() << "PageServer::portChanged" << boxPort;
-	console->append("PageServer::bundleNow");
+	//console->append("PageServer::bundleNow");
 	server->bundleTime();
 }
 

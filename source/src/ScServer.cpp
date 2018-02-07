@@ -247,8 +247,10 @@ namespace SC {
 
 	void ScServer::bundleTime() {
 		emit print("ScServer::bundleTime");
-		
-		const qint32 kSECONDS_FROM_1900_to_1970 = (qint32)2208988800UL;
+
+
+		const int32_t kSECONDS_FROM_1900_to_1970 = (int32_t)2208988800UL;
+
 		const double kNanosToOSCunits = 4.294967296; // pow(2,32)/1e9
 
 		using namespace std::chrono;
@@ -256,14 +258,31 @@ namespace SC {
 		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
 		seconds secs = duration_cast<seconds>(sinceEpoch);
 		nanoseconds nsecs = sinceEpoch - secs;
-		
+
 		qint64 answer = ((qint64)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32)
 			+ (qint64)(nsecs.count() * kNanosToOSCunits);
-		
-		qint64 sec_1900_init = ((qint64)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32);
 
-		emit print(tr("ScServer::answer        : (%1)").arg(QString::number(answer)));
-		emit print(tr("ScServer::sec_1900_init : (%1)").arg(QString::number(sec_1900_init)));
+		int64_t sec_1900_1970 = (int64_t)2208988800;
+		int64_t sec_1970_init = (int64_t)secs.count();
+		int64_t nsec_1970_init = (int64_t)nsecs.count();
+
+		//qint64 sec_1970_init = nsecs.count() * kNanosToOSCunits;
+		//qint64 sec_1900_init = ((qint64)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32);
+		//int64_t sec_1900_init = sec_1900_1970 + sec_1970_init;
+		//int64_t sec32_1900_init = sec_1900_init << 32;
+		//int64_t sec_1900_init = ((int64_t)(sec_1900_1970 + sec_1970_init) << 32) + (int64_t)(nsecs.count() * kNanosToOSCunits);
+		int64_t sec_1900_init = ((int64_t)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32)
+			+ (int64_t)(nsecs.count() * kNanosToOSCunits);
+		//int64_t sec_1900_init = ((sec_1900_1970 + sec_1970_init) << 32) + nsecs.count() * kNanosToOSCunits;
+
+
+		emit print(tr("sec_1900_1970              : (%1)").arg(QString::number(sec_1900_1970)));
+		emit print(tr("sec_1970_init              : (%1)").arg(QString::number(sec_1970_init)));
+		emit print(tr("nsec_1970_init             : (%1)").arg(QString::number(nsec_1970_init)));
+		//emit print(tr("secs.count()               : (%1)").arg(QString::number(secs.count())));
+		emit print(tr("sec_1900_init              : (%1)").arg(QString::number(sec_1900_init)));
+		//emit print(tr("ScServer::sec32_1900_init  : (%1)").arg(QString::number(sec32_1900_init)));
+		//emit print(tr("ScServer::answer           : (%1)").arg(QString::number(answer)));
 	}
 
 	void ScServer::sendOsc(CmdType pattern, QVariant arg1, QVariant arg2) {
