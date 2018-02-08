@@ -7,6 +7,9 @@
 #include <QNetworkDatagram>
 #include <QHostAddress>
 #include <QDateTime>
+
+#include <QTimeZone>
+#include <QTime>
 #include <QTimer>
 
 #include <oscpkt.h>
@@ -30,7 +33,10 @@ namespace SC {
 		void switchServer();
 		void startServer();
 		void stopServer();
-		void evaluate(QString parrent, QString arg1 = "", QString arg2 = "", QString arg3 = "");
+		void evaluate(QString parent, QString arg1 = "", QString arg2 = "", QString arg3 = "");
+
+		void initBundle(QTime time = QTime());
+		void sendBundle();
 
 		void notify(int, int);
 		void quit();
@@ -40,7 +46,8 @@ namespace SC {
 		void s_new(QString, int);
 		void n_free(int);
 
-		void bundleTime();
+		void printBundleTime();
+		void printBundleTimeQT();
 
 	signals:
 		void print(QString);
@@ -53,14 +60,12 @@ namespace SC {
 		int udpSocketPort;
 		ServerState mState;
 
+		PacketWriter pw;
+
 		Message *oscmsg;
 		QTimer *clockStatus;
 
 		void oscMsgParser(Message*);
-
-		//const quint64 sec_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
-		//const quint64 msec_1900_1970 = 2208988800000;// pozn.: pocet milisekund bez 17 prestupnych let 
-		//qint64 sec_1970_init;
 
 		// send osc message //////////////////////////////////////
 
@@ -86,6 +91,10 @@ namespace SC {
 		void processMsgRecived();
 		void oscMsgRecived();
 
+		// timetag //////////////////////////////////////
+
+		unsigned long long int bundleTime(QTime epoch);
+		
 
 
 

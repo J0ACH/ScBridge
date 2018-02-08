@@ -107,7 +107,7 @@ void PageServer::nodeFree() {
 }
 void PageServer::bundleNow() {
 	//console->append("PageServer::bundleNow");
-	server->bundleTime();
+	server->printBundleTimeQT();
 }
 
 void PageServer::cmdLineEvaluated() {
