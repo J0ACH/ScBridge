@@ -251,28 +251,35 @@ namespace SC {
 
 		const int32_t kSECONDS_FROM_1900_to_1970 = (int32_t)2208988800UL;
 
-		const double kNanosToOSCunits = 4.294967296; // pow(2,32)/1e9
+		const double kSecondsToOSC = 4294967296.; // pow(2,32)/1
+		const double kMicrosToOSC = 4294.967296; // pow(2,32)/1e6
+		const double kNanosToOSC = 4.294967296; // pow(2,32)/1e9
+		const double kOSCtoSecs = 2.328306436538696e-10;  // 1/pow(2,32)
+		const double kOSCtoNanos = 0.2328306436538696; // 1e9/pow(2,32)
+		
 
 		using namespace std::chrono;
 		system_clock::time_point timePoint = std::chrono::system_clock::now();
 		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
 		seconds secs = duration_cast<seconds>(sinceEpoch);
-		nanoseconds nsecs = sinceEpoch - secs;
-
-		qint64 answer = ((qint64)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32)
-			+ (qint64)(nsecs.count() * kNanosToOSCunits);
+		nanoseconds nsecs = sinceEpoch - secs;		
 
 		int64_t sec_1900_1970 = (int64_t)2208988800;
 		int64_t sec_1970_init = (int64_t)secs.count();
 		int64_t nsec_1970_init = (int64_t)nsecs.count();
+
+		int64_t sec_1900_init = sec_1900_1970 + sec_1970_init;
+		int64_t osc_1900_init = sec_1900_init * kSecondsToOSC;
 
 		//qint64 sec_1970_init = nsecs.count() * kNanosToOSCunits;
 		//qint64 sec_1900_init = ((qint64)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32);
 		//int64_t sec_1900_init = sec_1900_1970 + sec_1970_init;
 		//int64_t sec32_1900_init = sec_1900_init << 32;
 		//int64_t sec_1900_init = ((int64_t)(sec_1900_1970 + sec_1970_init) << 32) + (int64_t)(nsecs.count() * kNanosToOSCunits);
-		int64_t sec_1900_init = ((int64_t)(secs.count() + kSECONDS_FROM_1900_to_1970) << 32)
-			+ (int64_t)(nsecs.count() * kNanosToOSCunits);
+		/*
+		int64_t sec_1900_init = ((int64_t)(secs.count()*kOSCtoSecs + kSECONDS_FROM_1900_to_1970) << 32)
+			+ (int64_t)(nsecs.count() * kOSCtoNanos);
+		*/
 		//int64_t sec_1900_init = ((sec_1900_1970 + sec_1970_init) << 32) + nsecs.count() * kNanosToOSCunits;
 
 
@@ -281,6 +288,7 @@ namespace SC {
 		emit print(tr("nsec_1970_init             : (%1)").arg(QString::number(nsec_1970_init)));
 		//emit print(tr("secs.count()               : (%1)").arg(QString::number(secs.count())));
 		emit print(tr("sec_1900_init              : (%1)").arg(QString::number(sec_1900_init)));
+		emit print(tr("bundle                     : (%1)").arg(QString::number(sec_1900_init*kSecondsToOSC)));
 		//emit print(tr("ScServer::sec32_1900_init  : (%1)").arg(QString::number(sec32_1900_init)));
 		//emit print(tr("ScServer::answer           : (%1)").arg(QString::number(answer)));
 	}
