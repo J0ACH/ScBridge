@@ -101,9 +101,9 @@ namespace SC {
 
 		void oscMsgParser(Message*);
 
-		const quint64 sec_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
-		const quint64 msec_1900_1970 = 2208988800000;// pozn.: pocet milisekund bez 17 prestupnych let 
-		qint64 sec_1970_init;
+		//const quint64 sec_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
+		//const quint64 msec_1900_1970 = 2208988800000;// pozn.: pocet milisekund bez 17 prestupnych let 
+		//qint64 sec_1970_init;
 
 		// send osc message //////////////////////////////////////
 
