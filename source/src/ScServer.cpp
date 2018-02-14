@@ -125,6 +125,9 @@ namespace SC {
 			QString::number(time.msec()))
 		);
 	}
+	void ScServer::initBundle(int year, int month, int day, int min, int sec, int msec) {
+
+	}
 	void ScServer::sendBundle() {
 
 	}
@@ -293,7 +296,7 @@ namespace SC {
 		quint32 second_1970_now = dtime.toSecsSinceEpoch();
 		quint32 second_1900_now = second_1900_1970 + second_1970_now;
 
-		qint64 second64_1970_now = dtime.toSecsSinceEpoch()*1000;
+		qint64 second64_1970_now = dtime.toSecsSinceEpoch() * 1000;
 		qint64 nsecond64_1970_now = dtime.toMSecsSinceEpoch();
 		qint64 result = nsecond64_1970_now - second64_1970_now;
 
@@ -314,11 +317,22 @@ namespace SC {
 		*/
 
 
-
 		using namespace std::chrono;
-		system_clock::time_point timePoint = std::chrono::system_clock::now();
+
+		duration<
+			time_point<system_clock> p1;
+		system_clock::time_point future_timePoint = system_clock::now() + seconds(5);
+
+
+
+		//system_clock::time_point tp = system_clock::
+
+		//future_timePoint += seconds(5);
+
+		system_clock::time_point timePoint = system_clock::now();
 		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
 		seconds secs = duration_cast<seconds>(sinceEpoch);
+		seconds secs5 = duration_cast<seconds>(sinceEpoch);
 		nanoseconds nsecs = sinceEpoch - secs;
 
 		unsigned long int sec_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
@@ -349,7 +363,7 @@ namespace SC {
 
 
 		using namespace std::chrono;
-		system_clock::time_point timePoint = std::chrono::system_clock::now();
+		system_clock::time_point timePoint = system_clock::now();
 		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
 		seconds secs = duration_cast<seconds>(sinceEpoch);
 		nanoseconds nsecs = sinceEpoch - secs;
@@ -363,7 +377,6 @@ namespace SC {
 		double nanos2osc = 4.294967296; // pow(2,32)/1e9
 		unsigned long long int bundleTime = (sec_1900_now * sec2osc) + nsec_1970_init * nanos2osc;
 		unsigned long long int bundleTime2 = ((sec_1900_now + 2) * sec2osc) + nsec_1970_init * nanos2osc;
-
 
 		emit print(tr("sec_1900_1970              : (%1)").arg(QString::number(sec_1900_1970)));
 		emit print(tr("sec_1970_now               : (%1)").arg(QString::number(sec_1970_now)));

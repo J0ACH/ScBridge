@@ -13,6 +13,8 @@
 #include <QTimer>
 
 #include <oscpkt.h>
+
+
 using namespace oscpkt;
 
 namespace SC {
@@ -35,7 +37,9 @@ namespace SC {
 		void stopServer();
 		void evaluate(QString parent, QString arg1 = "", QString arg2 = "", QString arg3 = "");
 
+		
 		void initBundle(QTime time = QTime());
+		void initBundle(int year, int month, int day, int min, int sec, int msec);
 		void sendBundle();
 
 		void notify(int, int);
