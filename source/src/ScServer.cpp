@@ -10,6 +10,8 @@ namespace SC {
 		mState = ServerState::OFF;
 
 		serverTime.start();
+		serverInitTime = now();
+		
 		clockStatus = new QTimer(this);
 
 		connect(
@@ -144,6 +146,61 @@ namespace SC {
 	void ScServer::s_new(QString sDefName, int id) { sendOsc(CmdType::cmd_s_new, sDefName, id); }
 	void ScServer::n_free(int id) { sendOsc(CmdType::cmd_n_free, id); }
 
+	void ScServer::printBundleTimeQT() {
+		emit print("ScServer::bundleTimeQT");
+
+		QDate date = QDate::currentDate();
+		QTime time = QTime::currentTime();
+		QTimeZone zone = QTimeZone::systemTimeZone();
+		QDateTime dtime = QDateTime(date, time, zone);
+
+		qint64 second64_1970_now = dtime.toSecsSinceEpoch();
+		qint64 nsecond64_1970_now = dtime.toMSecsSinceEpoch() % 1000 * 1000000;
+
+		//bundleTime(second64_1970_now, 250);
+		//bundleTime(date.year(), date.month(), date.day(), time.hour(), time.minute(), time.second(), 0);
+
+		now();
+		//epochTime(second64_1970_now, 250);
+	}
+
+	void ScServer::printBundleTime() {
+		emit print("ScServer::ref bundleTime");
+
+		/*
+		const double kSecondsToOSC = 4294967296.; // pow(2,32)/1
+		const double kMicrosToOSC = 4294.967296; // pow(2,32)/1e6
+		const double kNanosToOSC = 4.294967296; // pow(2,32)/1e9
+		const double kOSCtoSecs = 2.328306436538696e-10;  // 1/pow(2,32)
+		const double kOSCtoNanos = 0.2328306436538696; // 1e9/pow(2,32)
+		*/
+
+
+		using namespace std::chrono;
+		system_clock::time_point timePoint = system_clock::now();
+		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
+		seconds secs = duration_cast<seconds>(sinceEpoch);
+		nanoseconds nsecs = sinceEpoch - secs;
+
+		unsigned long int sec_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
+		unsigned long int sec_1970_now = secs.count();
+		unsigned long int sec_1900_now = sec_1900_1970 + sec_1970_now;
+		unsigned long long int nsec_1970_init = nsecs.count();
+
+		unsigned long long int sec2osc = 4294967296; // pow(2,32)/1
+		double nanos2osc = 4.294967296; // pow(2,32)/1e9
+		unsigned long long int bundleTime = (sec_1900_now * sec2osc) + nsec_1970_init * nanos2osc;
+		unsigned long long int bundleTime2 = ((sec_1900_now + 2) * sec2osc) + nsec_1970_init * nanos2osc;
+
+		emit print(tr("sec_1900_1970              : (%1)").arg(QString::number(sec_1900_1970)));
+		emit print(tr("sec_1970_now               : (%1)").arg(QString::number(sec_1970_now)));
+		emit print(tr("sec_1900_init              : (%1)").arg(QString::number(sec_1900_now)));
+		emit print(tr("nsec_1970_init             : (%1)").arg(QString::number(nsec_1970_init)));
+		emit print(tr("bundleTime                 : (%1)").arg(QString::number(bundleTime)));
+		emit print(tr("bundleTime+2               : (%1)").arg(QString::number(bundleTime2)));
+
+	}
+
 	// recive osc message //////////////////////////////////////
 
 	void ScServer::processStateChanged(QProcess::ProcessState state)
@@ -273,130 +330,7 @@ namespace SC {
 	}
 
 	// send osc message //////////////////////////////////////
-
-	quint64 ScServer::bundleTime(qint64 epochsec, qint64 nanosec) {
-		QDateTime date = QDateTime::fromSecsSinceEpoch(epochsec, QTimeZone::systemTimeZone());
-		emit print(tr("ScServer::bundleTime date: %1").arg(date.toString()));
-
-		quint32 second_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
-		quint32 second_1900_now = second_1900_1970 + epochsec;
-		quint64 sec2osc = 4294967296; // pow(2,32)/1
-		double nanos2osc = 4.294967296; // pow(2,32)/1e9
-
-		quint64 bundle = second_1900_now * sec2osc + nanosec * nanos2osc;
-		emit print(tr("ScServer::bundleTime bundle: %1").arg(QString::number(bundle)));
-		return bundle;
-	}
-
-	quint64 ScServer::bundleTime(int year, int month, int day, int hours, int min, int sec, int nanosec) {
-		QDate date = QDate(year, month, day);
-		QTime time = QTime(hours, min, sec);
-		QTimeZone zone = QTimeZone::systemTimeZone();
-		QDateTime dtime = QDateTime(date, time, zone);
-		
-		emit print(tr("ScServer::bundleTime date: %1").arg(dtime.toString()));
-
-		quint32 second_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
-		quint32 second_1900_now = second_1900_1970 + dtime.toSecsSinceEpoch();
-		quint64 sec2osc = 4294967296; // pow(2,32)/1
-		double nanos2osc = 4.294967296; // pow(2,32)/1e9
-
-		quint64 bundle = second_1900_now * sec2osc + nanosec * nanos2osc;
-		emit print(tr("ScServer::bundleTime bundle: %1").arg(QString::number(bundle)));
-		emit print(tr("ScServer::bundleTime QElapsedTimer::nsecsElapsed(): %1").arg(QString::number(serverTime.nsecsElapsed())));
-		
-		return bundle;
-	}
-
-	void ScServer::printBundleTimeQT() {
-		emit print("ScServer::bundleTimeQT");
-		using namespace std::chrono;
-
-		QDate date = QDate::currentDate();
-		QTime time = QTime::currentTime();
-		system_clock::time_point timePoint = system_clock::now();
-		QTimeZone zone = QTimeZone::systemTimeZone();
-		QDateTime dtime = QDateTime(date, time, zone);
-
-		quint32 second_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
-		quint32 second_1970_now = dtime.toSecsSinceEpoch();
-		quint32 second_1900_now = second_1900_1970 + second_1970_now;
-
-		qint64 second64_1970_now = dtime.toSecsSinceEpoch();
-		qint64 nsecond64_1970_now = dtime.toMSecsSinceEpoch() % 1000 * 1000000;
-		quint64 sec2osc_temp = 4294967296; // pow(2,32)/1
-		double nanos2osc_temp = 4.294967296; // pow(2,32)/1e9
-
-		quint64 bundle = second_1900_now * sec2osc_temp + nsecond64_1970_now * nanos2osc_temp;
-
-		bundleTime(second64_1970_now, nsecond64_1970_now);
-		bundleTime(2018, 2, 14, 16, 40, 0);
-
-		// compare chrono vs QT
-
-		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
-		seconds secs = duration_cast<seconds>(sinceEpoch);
-		seconds secs5 = duration_cast<seconds>(sinceEpoch);
-		nanoseconds nsecs = sinceEpoch - secs;
-
-		unsigned long int sec_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
-		unsigned long int sec_1970_now = secs.count();
-		unsigned long int sec_1900_now = sec_1900_1970 + sec_1970_now;
-		unsigned long long int nsec_1970_now = nsecs.count();
-
-		bundleTime(secs.count(), nsecs.count());
-
-		emit print(tr("second_1970_now        : %1").arg(QString::number(second64_1970_now)));
-		emit print(tr("bundleSec_1970_now     : %1").arg(QString::number(sec_1970_now)));
-		emit print(tr("nsecond_1970_now       : %1").arg(QString::number(nsecond64_1970_now)));
-		emit print(tr("bundleNSec_1970_now    : %1").arg(QString::number(nsec_1970_now)));
-
-		unsigned long long int sec2osc = 4294967296; // pow(2,32)/1
-		double nanos2osc = 4.294967296; // pow(2,32)/1e9
-		unsigned long long int bundleTime = (sec_1900_now * sec2osc) + nsec_1970_now * nanos2osc;
-
-		emit print(tr("bundle         : %1").arg(QString::number(bundle)));
-		emit print(tr("bundleCompare  : %1").arg(QString::number(bundleTime)));
-
-	}
-
-	void ScServer::printBundleTime() {
-		emit print("ScServer::ref bundleTime");
-
-		/*
-		const double kSecondsToOSC = 4294967296.; // pow(2,32)/1
-		const double kMicrosToOSC = 4294.967296; // pow(2,32)/1e6
-		const double kNanosToOSC = 4.294967296; // pow(2,32)/1e9
-		const double kOSCtoSecs = 2.328306436538696e-10;  // 1/pow(2,32)
-		const double kOSCtoNanos = 0.2328306436538696; // 1e9/pow(2,32)
-		*/
-
-
-		using namespace std::chrono;
-		system_clock::time_point timePoint = system_clock::now();
-		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
-		seconds secs = duration_cast<seconds>(sinceEpoch);
-		nanoseconds nsecs = sinceEpoch - secs;
-
-		unsigned long int sec_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
-		unsigned long int sec_1970_now = secs.count();
-		unsigned long int sec_1900_now = sec_1900_1970 + sec_1970_now;
-		unsigned long long int nsec_1970_init = nsecs.count();
-
-		unsigned long long int sec2osc = 4294967296; // pow(2,32)/1
-		double nanos2osc = 4.294967296; // pow(2,32)/1e9
-		unsigned long long int bundleTime = (sec_1900_now * sec2osc) + nsec_1970_init * nanos2osc;
-		unsigned long long int bundleTime2 = ((sec_1900_now + 2) * sec2osc) + nsec_1970_init * nanos2osc;
-
-		emit print(tr("sec_1900_1970              : (%1)").arg(QString::number(sec_1900_1970)));
-		emit print(tr("sec_1970_now               : (%1)").arg(QString::number(sec_1970_now)));
-		emit print(tr("sec_1900_init              : (%1)").arg(QString::number(sec_1900_now)));
-		emit print(tr("nsec_1970_init             : (%1)").arg(QString::number(nsec_1970_init)));
-		emit print(tr("bundleTime                 : (%1)").arg(QString::number(bundleTime)));
-		emit print(tr("bundleTime+2               : (%1)").arg(QString::number(bundleTime2)));
-
-	}
-
+	
 	void ScServer::sendOsc(CmdType pattern, QVariant arg1, QVariant arg2) {
 
 		PacketWriter pw;
@@ -469,6 +403,66 @@ namespace SC {
 			pw.endBundle();
 			udpSocket->writeDatagram(pw.packetData(), pw.packetSize(), QHostAddress::LocalHost, udpSocketPort);
 		}
+	}
+
+	// timetag //////////////////////////////////////
+
+	double ScServer::now() {
+		emit print("ScServer::now");
+
+		//emit print(tr("serverInitTime             : %1").arg(QString::number(serverInitTime, 'f', 9)));
+
+		using namespace std::chrono;
+		system_clock::time_point timePoint = system_clock::now();
+		system_clock::duration sinceEpoch = timePoint.time_since_epoch();
+		seconds secs = duration_cast<seconds>(sinceEpoch);
+		nanoseconds nsecs = sinceEpoch - secs;
+
+		unsigned long int sec_1970_now = secs.count();
+		unsigned long long int nsec_1970_now = nsecs.count();
+
+		//emit print(tr("epochSeconds              : %1").arg(QString::number(sec_1970_now)));
+		//emit print(tr("nanoSeconds               : %1").arg(QString::number(nsec_1970_now)));
+		//emit print(tr("nanoSinceInit             : %1").arg(QString::number(serverTime.nsecsElapsed())));
+
+		double nowTime = secs.count() + nsecs.count() / 1000000000.0;
+		//emit print(tr("nowTime                   : %1").arg(QString::number(nowTime, 'f', 12)));
+		emit print(tr("nowTime [sec.nano]          : %1").arg(QString::number(nowTime, 'f', 22)));
+		return nowTime;
+	}
+
+	double ScServer::epochTime(qint64 epochsec, qint64 nanosec) {
+		emit print(tr("nanosec                   : %1").arg(QString::number(nanosec)));
+		//if()
+
+		double eTime = epochsec + nanosec / 1000000000.0;
+		emit print(tr("epochTime                 : %1").arg(QString::number(eTime, 'f', 9)));
+
+		return 1;
+	}
+
+	quint64 ScServer::bundleTime(qint64 epochsec, qint64 nanosec) {
+		QDateTime date = QDateTime::fromSecsSinceEpoch(epochsec, QTimeZone::systemTimeZone());
+		emit print(tr("ScServer::bundleTime date: %1").arg(date.toString()));
+
+		quint32 second_1900_1970 = 2208988800; // pozn.: pocet sekund bez 17 prestupnych let 
+		quint32 second_1900_now = second_1900_1970 + epochsec;
+		quint64 sec2osc = 4294967296; // pow(2,32)/1
+		double nanos2osc = 4.294967296; // pow(2,32)/1e9
+
+		quint64 bundle = second_1900_now * sec2osc + nanosec * nanos2osc;
+		emit print(tr("ScServer::bundleTime bundle: %1").arg(QString::number(bundle)));
+		return bundle;
+	}
+
+	quint64 ScServer::bundleTime(int year, int month, int day, int hours, int min, int sec, int nanosec) {
+		QDate date = QDate(year, month, day);
+		QTime time = QTime(hours, min, sec);
+		QTimeZone zone = QTimeZone::systemTimeZone();
+		QDateTime dtime = QDateTime(date, time, zone);
+
+		qint64 epochSeconds = dtime.toSecsSinceEpoch();
+		return bundleTime(epochSeconds, nanosec);
 	}
 
 }

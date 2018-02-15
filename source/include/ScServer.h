@@ -68,6 +68,7 @@ namespace SC {
 		PacketWriter pw;
 
 		QElapsedTimer serverTime;
+		double serverInitTime;
 
 		Message *oscmsg;
 		QTimer *clockStatus;
@@ -99,9 +100,10 @@ namespace SC {
 		void oscMsgRecived();
 
 		// timetag //////////////////////////////////////
-
-	//	unsigned long long int sec2osc = 4294967296; // pow(2,32)/1
-	//	double nanos2osc = 4.294967296; // pow(2,32)/1e9
+				
+		double now();
+		
+		double epochTime(qint64 epochsec, qint64 nanosec = 0);
 
 		quint64 bundleTime(int year, int month, int day, int hours, int min, int sec, int nanosec = 0);
 		quint64 bundleTime(qint64 epochsec, qint64 nanosec = 0);
