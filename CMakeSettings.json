@@ -12,11 +12,9 @@
       "variables": [
         {
           "name": "CMAKE_INSTALL_PREFIX",
-          //"value": "${env.ProgramFiles}\\Jui",
           "value": "${projectDir}\\install"
         }
       ]
-
     },
     {
       "name": "x64-Release",
@@ -29,7 +27,6 @@
       "variables": [
         {
           "name": "CMAKE_INSTALL_PREFIX",
-          //"value": "${env.ProgramFiles}\\Jui",
           "value": "${projectDir}\\install"
         }
       ]
