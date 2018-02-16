@@ -18,8 +18,8 @@ add_library(ScBridge SHARED
 target_include_directories(ScBridge 
 	PRIVATE 
 		${CMAKE_CURRENT_LIST_DIR}/include
-	PUBLIC
-		${_qtIncludeDirs}
+	INTERFACE
+		$<INSTALL_INTERFACE:${PROJECT_NAME}_${PROJECT_VERSION}/include>
 )
 target_link_libraries(ScBridge 
 	PUBLIC 
@@ -46,11 +46,9 @@ target_include_directories(ScTester
 	PRIVATE 
 		${CMAKE_CURRENT_LIST_DIR}/test
 		${CMAKE_CURRENT_LIST_DIR}/include
-	PUBLIC
-		${_qtIncludeDirs}
 )
 target_link_libraries(ScTester 
-	PUBLIC 
+	PRIVATE
 		ScBridge
 		Qt5::Core
 		Qt5::Widgets
@@ -59,9 +57,6 @@ target_link_libraries(ScTester
 string(TOUPPER ${CMAKE_CONFIGURATION_TYPES} configType)
 set_target_properties( ScBridge ScTester
     PROPERTIES
-		#ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/lib
-		#LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/lib
-		#RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/bin
 		ARCHIVE_OUTPUT_DIRECTORY_${configType} ${CMAKE_SOURCE_DIR}/build/lib
 		LIBRARY_OUTPUT_DIRECTORY_${configType} ${CMAKE_SOURCE_DIR}/build/lib
 		RUNTIME_OUTPUT_DIRECTORY_${configType} ${CMAKE_SOURCE_DIR}/build/bin
@@ -71,8 +66,6 @@ set_target_properties( ScBridge ScTester
 
 # PACKAGE SETUP ###################################################
 
-#[[
-#]]
 include(CMakePackageConfigHelpers)
 configure_package_config_file (
 	${CMAKE_CURRENT_SOURCE_DIR}/ScBridgeConfig.cmake.in
@@ -84,53 +77,34 @@ write_basic_package_version_file(
 	VERSION ${PROJECT_VERSION}
 	COMPATIBILITY AnyNewerVersion 
 )
-#cmake_policy(SET CMP0022 NEW)
+cmake_policy(SET CMP0022 NEW)
 export ( 
 	TARGETS ScBridge
-	#FILE ${CMAKE_BINARY_DIR}/lib/${CMAKE_CONFIGURATION_TYPES}/ScBridgeTargets.cmake 
 	FILE ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Targets.cmake 
 	EXPORT_LINK_INTERFACE_LIBRARIES
 )
-#[[
-#]]
-
 
 # INSTALL SETUP ###################################################
 
-#if(${CMAKE_CONFIGURATION_TYPES} MATCHES Release)
-
-	install(
-		TARGETS ScBridge
-		EXPORT ScBridgeTargets
-		ARCHIVE DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/lib
-		LIBRARY DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/lib
-		RUNTIME DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/bin
-		#CONFIGURATIONS Release
-	)
-	
-	#[[
-	export(
-		EXPORT ScBridgeTargets
-		FILE ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Targets.cmake 
-	)
-#]]
-
-	install(
-		FILES ${ScBridge_hdr}
-		DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/include
-	)
-	install(
-		EXPORT ScBridgeTargets
-		DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/cmake
-		FILE ScBridgeTargets.cmake
-		#CONFIGURATIONS Release
-	)
-	install(
-		FILES 
-			${CMAKE_BINARY_DIR}/ScBridgeConfig.cmake
-			${CMAKE_BINARY_DIR}/ScBridgeConfigVersion.cmake
-		DESTINATION	${PROJECT_NAME}_${PROJECT_VERSION}/cmake
-	)
-#else()
-	#message(STATUS "ScBridge installation skiped. Configuration NOT set to Release")  
-#endif()
+install(
+	TARGETS ScBridge
+	EXPORT ScBridgeTargets
+	ARCHIVE DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/lib
+	LIBRARY DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/lib
+	RUNTIME DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/bin
+)	
+install(
+	FILES ${ScBridge_hdr}
+	DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/include
+)
+install(
+	EXPORT ScBridgeTargets
+	DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/cmake
+	FILE ScBridgeTargets.cmake
+)
+install(
+	FILES 
+		${CMAKE_BINARY_DIR}/ScBridgeConfig.cmake
+		${CMAKE_BINARY_DIR}/ScBridgeConfigVersion.cmake
+	DESTINATION	${PROJECT_NAME}_${PROJECT_VERSION}/cmake
+)
