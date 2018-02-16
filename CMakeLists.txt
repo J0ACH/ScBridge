@@ -5,7 +5,6 @@ project (ScBridge VERSION 0.0.1)
 message(STATUS "")
 message(STATUS "ScBridge [${PROJECT_VERSION}] config init...")
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
