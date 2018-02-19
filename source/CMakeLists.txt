@@ -62,17 +62,6 @@ set_target_properties( ScBridge ScTester
 		DEBUG_POSTFIX d
 		WIN32_EXECUTABLE TRUE
 )
-#[[
-string(TOUPPER ${CMAKE_CONFIGURATION_TYPES} configType)
-set_target_properties( ScBridge ScTester
-    PROPERTIES
-		ARCHIVE_OUTPUT_DIRECTORY_${configType} ${CMAKE_BINARY_DIR}/lib/${configType}
-		LIBRARY_OUTPUT_DIRECTORY_${configType} ${CMAKE_BINARY_DIR}/lib/${configType}
-		RUNTIME_OUTPUT_DIRECTORY_${configType} ${CMAKE_BINARY_DIR}/bin/${configType}
-		DEBUG_POSTFIX d
-		WIN32_EXECUTABLE TRUE
-)
-#]]
 
 # PACKAGE SETUP ###################################################
 
