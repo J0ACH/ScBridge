@@ -20,6 +20,7 @@ target_include_directories(ScBridge
 		${CMAKE_CURRENT_LIST_DIR}/include
 	INTERFACE
 		$<INSTALL_INTERFACE:${PROJECT_NAME}_${PROJECT_VERSION}/include>
+		#$<TARGET_PROPERTY:Qt5::Network,INTERFACE_INCLUDE_DIRECTORIES>
 )
 target_link_libraries(ScBridge 
 	PUBLIC 
@@ -34,7 +35,6 @@ add_custom_command(TARGET ScBridge
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/build/include
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ScBridge_hdr} ${CMAKE_SOURCE_DIR}/build/include
 )
-
 # ////////////////////////////
 
 add_executable(ScTester 
@@ -69,18 +69,18 @@ set_target_properties( ScBridge ScTester
 include(CMakePackageConfigHelpers)
 configure_package_config_file (
 	${CMAKE_CURRENT_SOURCE_DIR}/ScBridgeConfig.cmake.in
-	${CMAKE_BINARY_DIR}/ScBridgeConfig.cmake
+	${CMAKE_BINARY_DIR}/cmake/ScBridgeConfig.cmake
 	INSTALL_DESTINATION ${PROJECT_NAME}/cmake
 )
 write_basic_package_version_file(
-	${CMAKE_BINARY_DIR}/ScBridgeConfigVersion.cmake
+	${CMAKE_BINARY_DIR}/cmake/ScBridgeConfigVersion.cmake
 	VERSION ${PROJECT_VERSION}
 	COMPATIBILITY AnyNewerVersion 
 )
 cmake_policy(SET CMP0022 NEW)
 export ( 
 	TARGETS ScBridge
-	FILE ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Targets.cmake 
+	FILE ${CMAKE_BINARY_DIR}/cmake/${CMAKE_PROJECT_NAME}Targets.cmake 
 	EXPORT_LINK_INTERFACE_LIBRARIES
 )
 
@@ -92,19 +92,24 @@ install(
 	ARCHIVE DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/lib
 	LIBRARY DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/lib
 	RUNTIME DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/bin
+	CONFIGURATIONS Release
 )	
 install(
 	FILES ${ScBridge_hdr}
 	DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/include
+	CONFIGURATIONS Release
 )
 install(
 	EXPORT ScBridgeTargets
 	DESTINATION ${PROJECT_NAME}_${PROJECT_VERSION}/cmake
 	FILE ScBridgeTargets.cmake
+	CONFIGURATIONS Release
 )
 install(
 	FILES 
 		${CMAKE_BINARY_DIR}/ScBridgeConfig.cmake
 		${CMAKE_BINARY_DIR}/ScBridgeConfigVersion.cmake
 	DESTINATION	${PROJECT_NAME}_${PROJECT_VERSION}/cmake
+	CONFIGURATIONS Release
 )
+

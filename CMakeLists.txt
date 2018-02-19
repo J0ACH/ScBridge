@@ -1,13 +1,31 @@
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.8.2)
 cmake_policy(SET CMP0048 NEW)
 project (ScBridge VERSION 0.0.1)
 
 message(STATUS "")
-message(STATUS "ScBridge [${PROJECT_VERSION}] config init...")
+message(STATUS "ScBridge [${PROJECT_VERSION}] config init with variables...")
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}_${PROJECT_VERSION}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}_${PROJECT_VERSION}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}_${PROJECT_VERSION}/lib)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+#set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD TRUE)
+set(CMAKE_VS_INCLUDE_PACKAGE_TO_DEFAULT_BUILD TRUE)
+
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+
+set(cacheDir ${CMAKE_SOURCE_DIR}/cache)
+set(buildDir ${CMAKE_SOURCE_DIR}/build)
+set(installDir ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}_${PROJECT_VERSION})
+set(copyDir ${BUILD_COPY_DIR})
+
+message(STATUS "\t cacheDir: " ${cacheDir})
+message(STATUS "\t buildDir: " ${buildDir})
+message(STATUS "\t installDir: " ${installDir})
+message(STATUS "\t CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD: " ${CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD})
 
 message(STATUS "CMAKE_GENERATOR : " ${CMAKE_GENERATOR})
 message(STATUS "CMAKE_BUILD_TYPE : " ${CMAKE_BUILD_TYPE})
@@ -15,7 +33,9 @@ message(STATUS "CMAKE_CONFIGURATION_TYPES : " ${CMAKE_CONFIGURATION_TYPES})
 
 add_subdirectory (source)
 
-message(STATUS "SCBRIDGE_VERSION : " ${PROJECT_VERSION} )
+export(PACKAGE ScBridge)
+
+message(STATUS "ScBridge config done...\n")
 
 
 
